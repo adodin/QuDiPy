@@ -5,5 +5,5 @@ Version: 0.0.0
 
 Date: Friday, September 14, 2018
 
-A package for the propagation of quantum state-space distributions
+A package for the propagation of quantum state-space distributions.
 
