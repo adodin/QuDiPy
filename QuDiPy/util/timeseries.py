@@ -3,6 +3,7 @@ Written by: Amro Dodin (Willard Group - MIT)
 
 """
 
+import numpy as np
 
 class TimeSeries:
     def append(self, data, time):
@@ -12,6 +13,11 @@ class TimeSeries:
 
     def __iter__(self):
         return self
+
+    def __eq__(self, other):
+        data_equality = np.array_equal(self.data, other.data)
+        time_equality = np.array_equal(self.time, other.time)
+        return data_equality and time_equality
 
     def __next__(self):
         if self.__index == self.length:
