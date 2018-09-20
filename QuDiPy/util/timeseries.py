@@ -5,6 +5,7 @@ Written by: Amro Dodin (Willard Group - MIT)
 
 import numpy as np
 
+
 class TimeSeries:
     def append(self, data, time):
         self.data.append(data)

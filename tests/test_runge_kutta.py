@@ -61,7 +61,5 @@ class Testrk_integrate(TestCase):
         self.assertEqual(series_correct, series_calculated)
 
 
-
-
 if __name__ == '__main__':
     unittest.main()
