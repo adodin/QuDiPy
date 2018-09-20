@@ -52,7 +52,7 @@ def calculate_cartesian_divergence(vector_funct, coordinates):
     for i in range(len(coordinates)):
         fi = vector_funct[i]
         ci = coordinates[i]
-        divergence += np.gradient(fi, ci, axis=i)
+        divergence += np.gradient(fi, ci, axis=i, edge_order=2)
     return divergence
 
 

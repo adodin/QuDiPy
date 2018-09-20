@@ -60,8 +60,11 @@ def calculate_spherical_divergence(vector_funct, coordinates, grid):
     v_funct.append(vector_funct[1] * sin(theta))
     v_funct.append(vector_funct[2])
 
-    divergence = np.zeros_like(r)
-    divergence += np.gradient(v_funct[0], coordinates[0], axis=0)/(r ** 2)
-    divergence += np.gradient(v_funct[1], coordinates[1], axis=1)/(r * sin(theta))
-    divergence += np.gradient(v_funct[2], coordinates[2], axis=2)/(r * sin(theta))
+    divergence = np.zeros_like(v_funct[0])
+    r_div = np.gradient(v_funct[0], coordinates[0], axis=0, edge_order=2)/(r ** 2)
+    divergence += r_div
+    t_div = np.gradient(v_funct[1], coordinates[1], axis=1, edge_order=2)/(r * sin(theta))
+    divergence += t_div
+    p_div = np.gradient(v_funct[2], coordinates[2], axis=2, edge_order=2)/(r * sin(theta))
+    divergence += p_div
     return divergence

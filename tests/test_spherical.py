@@ -122,14 +122,16 @@ class TestCalculate_spherical_gradient(TestCase):
 
 class TestCalculate_spherical_divergence(TestCase):
     def test_divergence_radial(self):
-        r_array = np.linspace(1E-4, 1., 20)
-        theta_array = np.linspace(1E-4, pi-1E-4, 10)
+        r_array = np.linspace(1E-2, 1., 10000)
+        theta_array = np.linspace(1E-2, pi-1E-2, 10)
         phi_array = np.linspace(0., 2*pi, 10)
         r_grid, t_grid, p_grid = np.meshgrid(r_array, theta_array, phi_array, indexing='ij')
         vector_funct = (r_grid, np.zeros_like(t_grid), np.zeros_like(p_grid))
-        correct_divergence = np.ones_like(r_grid)
+        correct_divergence = 3* np.ones_like(r_grid)
         calculated_divergence = sp.calculate_spherical_divergence(vector_funct, (r_array, theta_array, phi_array),
                                                                   (r_grid, t_grid, p_grid))
+        self.assertTrue(np.array_equal(np.round(calculated_divergence, 3), correct_divergence)) # Allow for numerical error
+
 
 if __name__ == '__main__':
     unittest.main()

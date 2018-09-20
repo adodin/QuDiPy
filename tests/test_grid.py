@@ -128,17 +128,6 @@ class TestCalculate_cartesian_divergence(TestCase):
         test = np.round(calculated_divergence, 7) == correct_divergence
         self.assertTrue(np.array_equal(np.round(calculated_divergence, 7), correct_divergence))
 
-    def test_calculate_cartesian_gradient_quadratic(self):
-        x = np.linspace(-1., 1., 11)
-        y = np.linspace(-1., 1., 21)
-        z = np.linspace(0., 1., 11)
-        x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
-        funct = z_grid ** 2
-        correct_gradient = (np.zeros_like(x_grid), np.zeros_like(y_grid), 2 * z_grid)
-        calculated_gradient = gr.calculate_cartesian_gradient(funct, (x, y, z))
-        for correct, calculated in zip(correct_gradient, calculated_gradient):
-            self.assertTrue(np.array_equal(np.round(calculated, 7), np.round(correct, 7)))
-
 
 
 class TestGrid(TestCase):
