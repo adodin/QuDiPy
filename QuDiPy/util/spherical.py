@@ -3,7 +3,7 @@ Written by: Amro Dodin (Willard Group - MIT)
 
 """
 
-from numpy import pi, sin, cos
+from numpy import pi, sin, cos, sqrt, arccos, arctan
 import numpy as np
 
 
@@ -13,25 +13,58 @@ def spherical_to_cartesian(spherical_vector):
         i, r, theta, phi = spherical_vector
     else:
         r, theta, phi = spherical_vector
-    if hasattr(r, '__iter__'):
-        assert np.shape(r) == np.shape(theta) == np.shape(phi)
-        for rad, t, p in zip(np.nditer(r), np.nditer(theta), np.nditer(phi)):
-            assert rad.imag == 0 and 0 <= rad
-            assert t.imag == 0 and 0 <= t <= pi
-            assert p.imag == 0 and 0 <= p <= 2 * pi
-    else:
-        assert r.imag == 0 and 0 <= r
-        assert theta.imag == 0 and 0 <= theta <= pi
-        assert phi.imag == 0 and 0 <= phi <= 2*pi
 
     # Calculate Cartesian Coordinates
-    x = r * sin(theta) * cos(phi)
-    y = r * sin(theta) * sin(phi)
-    z = r * cos(theta)
+    x_r = r.real * sin(theta.real) * cos(phi.real)
+    y_r = r.real * sin(theta.real) * sin(phi.real)
+    z_r = r.real * cos(theta.real)
+    x_i = r.imag * sin(theta.imag) * cos(phi.imag)
+    y_i = r.imag * sin(theta.imag) * sin(phi.imag)
+    z_i = r.imag * cos(theta.imag)
+    x = x_r + 1.j * x_i
+    y = y_r + 1.j * y_i
+    z = z_r + 1.j * z_i
     if len(spherical_vector) == 4:
         return i, x, y, z
     else:
         return x, y, z
+
+
+def cartesian_to_spherical(cartesian_vector):
+    # Parse 3 and 4-vectors
+    if len(cartesian_vector) == 4:
+        i, x, y, z = cartesian_vector
+    else:
+        x, y, z = cartesian_vector
+
+    # Convert Real Part To Spherical
+    r_r = sqrt(x.real**2 + y.real**2 + z.real**2)
+    if r_r != 0:
+        theta_r = arccos(z.real / (r_r+1E-50))
+        phi_r = np.arctan2(y.real, x.real)
+    else:
+        theta_r = 0
+        phi_r = 0
+
+    # Convert Imaginary Part to Spherical
+    r_i = sqrt(x.imag ** 2 + y.imag ** 2 + z.imag ** 2)
+    if r_i != 0:
+        theta_i = arccos(z.imag / (r_i + 1E-50))
+        phi_i = np.arctan2(y.imag, x.imag)
+    else:
+        theta_i = 0
+        phi_i = 0
+
+    # Combine Real and Imaginary Parts
+    r = r_r + 1.j * r_i
+    theta = theta_r + 1.j * theta_i
+    phi = phi_r + 1.j * phi_i
+
+    # Output Results
+    if len(cartesian_vector) == 4:
+        return i, r, theta, phi
+    else:
+        return r, theta, phi
 
 
 def spherical_to_cartesian_grid(coordinates):
@@ -52,6 +85,7 @@ def calculate_spherical_gradient(funct, coordinates, grid):
     partial_derivatives[1] = partial_derivatives[1]/r
     partial_derivatives[2] = partial_derivatives[2]/(r*sin(theta))
     return partial_derivatives
+
 
 def calculate_spherical_divergence(vector_funct, coordinates, grid):
     r, theta, phi = grid

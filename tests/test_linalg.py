@@ -19,13 +19,13 @@ class TestCartesianSpinObservable(TestCase):
         self.basis_vectors = [self.i, self.x, self.y, self.z]
         self.rands = [(rn.rand(), rn.rand(), rn.rand(), rn.rand()) for i in range(10)]
         self.vectors = self.basis_vectors + self.rands
-        self.si = la.CartesianSpinObservable(self.i)
-        self.si2 = la.CartesianSpinObservable(self.i)
-        self.sx = la.CartesianSpinObservable(self.x)
-        self.sy = la.CartesianSpinObservable(self.y)
-        self.sz = la.CartesianSpinObservable(self.z)
+        self.si = la.CartesianSpinOperator(self.i)
+        self.si2 = la.CartesianSpinOperator(self.i)
+        self.sx = la.CartesianSpinOperator(self.x)
+        self.sy = la.CartesianSpinOperator(self.y)
+        self.sz = la.CartesianSpinOperator(self.z)
         self.basis_operators = [self.si, self.sx, self.sy, self.sz]
-        self.srands = [la.CartesianSpinObservable(rand) for rand in self.rands]
+        self.srands = [la.CartesianSpinOperator(rand) for rand in self.rands]
         self.operators = self.basis_operators + self.srands
         pass
 
@@ -37,16 +37,9 @@ class TestCartesianSpinObservable(TestCase):
     def test_init_length_assertion(self):
         """ Tests that the constructor correctly raises initialization error if the wrong length input provided """
         with self.assertRaises(AssertionError):
-            la.CartesianSpinObservable((1., 0., 0.))
+            la.CartesianSpinOperator((1., 0., 0.))
         with self.assertRaises(AssertionError):
-            la.CartesianSpinObservable((1., 0., 0., 0., 0., 0.))
-
-    def test_init_real_assertion(self):
-        """ Tests that the constructor correctly raises initialization error if complex inputs provided """
-        with self.assertRaises(AssertionError):
-            la.CartesianSpinObservable((1.j, 0., 0., 0.))
-        with self.assertRaises(AssertionError):
-            la.CartesianSpinObservable((0., 1. + 1.j, 0., 0.))
+            la.CartesianSpinOperator((1., 0., 0., 0., 0., 0.))
 
     # Observable Overload Test
     def test_mult_overload(self):
@@ -68,6 +61,34 @@ class TestCartesianSpinObservable(TestCase):
         self.assertTrue(self.si == self.si2)
         self.assertFalse(self.si == self.sx)
         self.assertTrue(self.si != self.sx)
+
+    def test_matmul_overload(self):
+        prodiz = self.si @ self.sz
+        self.assertEqual(prodiz, self.sz)
+        prodxz = self.sx @ self.sz
+        prodzx = self.sz @ self.sx
+        self.assertEqual(prodxz, la.CartesianSpinOperator((0., 0., -1.j, 0.)))
+        self.assertEqual(prodzx, la.CartesianSpinOperator((0., 0., 1.j, 0.)))
+
+    def test_add_overload(self):
+        sum_ix = self.si + self.sx
+        expected_sum_ix = la.CartesianSpinOperator((1, 1, 0, 0))
+        self.assertEqual(sum_ix, expected_sum_ix)
+
+    def test_rmult_real_overload(self):
+        mult_2i = 2 * self.si
+        expected_mult_2i = la.CartesianSpinOperator((2, 0, 0, 0))
+        self.assertEqual(mult_2i, expected_mult_2i)
+
+    def test_rmult_complex_overload(self):
+        calc = (1 + 1j) * self.sx
+        expected = la.CartesianSpinOperator((0, 1 + 1j, 0, 0))
+        self.assertEqual(calc, expected)
+
+    def test_sub_overload(self):
+        diff_ix = self.si - self.sx
+        expected_diff_ix = la.CartesianSpinOperator((1, -1, 0, 0))
+        self.assertEqual(diff_ix, expected_diff_ix)
 
     def test_calculate_matrix(self):
         """ Tests that matrices are correctly constructed from the Observable """
@@ -112,10 +133,10 @@ class TestSphericalSpinObservable(TestCase):
         self.x = (0., 1., np.pi/2, 0.)
         self.y = (0., 1., np.pi/2, np.pi/2)
         self.z = (0., 1., 0., 0.)
-        self.si = la.SphericalSpinObservable(self.i)
-        self.sx = la.SphericalSpinObservable(self.x)
-        self.sy = la.SphericalSpinObservable(self.y)
-        self.sz = la.SphericalSpinObservable(self.z)
+        self.si = la.SphericalSpinOperator(self.i)
+        self.sx = la.SphericalSpinOperator(self.x)
+        self.sy = la.SphericalSpinOperator(self.y)
+        self.sz = la.SphericalSpinOperator(self.z)
         pass
 
     def test_init(self):
@@ -125,32 +146,42 @@ class TestSphericalSpinObservable(TestCase):
         self.assertEqual(self.sy.vector, self.y)
         self.assertEqual(self.sz.vector, self.z)
 
+    def test_matmul(self):
+        prodiz = self.si @ self.sz
+        self.assertEqual(prodiz, self.sz)
+        prodxz = self.sx @ self.sz
+        self.assertEqual(prodxz, -1j * self.sy)
+
+    def test_cross_equality(self):
+        cart_x = la.CartesianSpinOperator((0, 1, 0, 0))
+        self.assertEqual(self.sx, cart_x)
+
+    def test_add_overload(self):
+        calc = self.si + self.sx
+        expected = la.CartesianSpinOperator((1, 1, 0, 0))
+        self.assertEqual(calc, expected)
+
+    def test_rmult_real_overload(self):
+        calc = -2 * self.sx
+        expected = la.CartesianSpinOperator((0, -2, 0, 0))
+        self.assertEqual(calc, expected)
+
+    def test_rmult_complex_overload(self):
+        calc = (1 + 1j) * self.sx
+        expected = la.CartesianSpinOperator((0, 1 + 1j, 0, 0))
+        self.assertEqual(calc, expected)
+
+    def test_sub_overload(self):
+        calc = self.si - self.sx
+        expected = la.CartesianSpinOperator((1, -1, 0, 0))
+        self.assertEqual(calc, expected)
+
     def test_init_length_assertion(self):
         """ Tests that the constructor correctly raises initialization error if the wrong length input provided """
         with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((1., 0., 0.))
+            la.SphericalSpinOperator((1., 0., 0.))
         with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((1., 0., 0., 0., 0., 0.))
-
-    def test_init_real_assertion(self):
-        """ Tests that the constructor correctly raises initialization error if complex inputs provided """
-        with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((1.j, 0., 0., 0.))
-        with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((0., 1. + 1.j, 0., 0.))
-
-    def test_init_range_assertion(self):
-        """ Tests that the initializer catches invalid spherical coordinate inputs"""
-        with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((1., -1., 0., 0.))
-        with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((1., 0., -1., 0.))
-        with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((1., 0., 10., 0.))
-        with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((1., 0., 0., -1.))
-        with self.assertRaises(AssertionError):
-            la.SphericalSpinObservable((1., 0., 0., 10.))
+            la.SphericalSpinOperator((1., 0., 0., 0., 0., 0.))
 
     def test_convert_cartesian(self):
         """ Tests conversion between Spherical and Cartesian Coordinates """
@@ -197,6 +228,20 @@ class TestSphericalSpinObservable(TestCase):
         self.assertAlmostEqual(self.sx * self.sy, 0.)
         self.assertAlmostEqual(self.sx * self.sz, 0.)
         self.assertAlmostEqual(self.sy * self.sz, 0.)
+
+
+class TestCalculate_cartesian_vector_from_matrix(TestCase):
+    def test_basis_conversion(self):
+        i = np.array([[1, 0], [0, 1]])
+        x = np.array([[0, 1], [1, 0]])
+        y = 1j * np.array([[0, -1], [1, 0]])
+        z = np.array([[1, 0], [0, -1]])
+        self.assertTrue(np.array_equal(la.calculate_cartesian_spin_vector_from_matrix(i), (1, 0, 0, 0)))
+        self.assertTrue(np.array_equal(la.calculate_cartesian_spin_vector_from_matrix(x), (0, 1, 0, 0)))
+        self.assertTrue(np.array_equal(la.calculate_cartesian_spin_vector_from_matrix(y), (0, 0, 1, 0)))
+        self.assertTrue(np.array_equal(la.calculate_cartesian_spin_vector_from_matrix(z), (0, 0, 0, 1)))
+
+
 
 
 if __name__ == '__main__':

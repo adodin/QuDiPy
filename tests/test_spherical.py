@@ -8,16 +8,23 @@ from numpy import pi, sin, cos
 class TestSpherical_to_cartesian(TestCase):
     def test_spherical_to_cartesian_one_3D_point(self):
         x_spherical = (1., pi/2, 0.)
+        minus_x_spherical = (1., pi/2, pi)
+        r, t, p = minus_x_spherical
         y_spherical = (1., pi/2, pi/2)
         z_spherical = (1., 0., 0.)
         x_convert = sp.spherical_to_cartesian(x_spherical)
+        minus_x_convert = sp.spherical_to_cartesian(minus_x_spherical)
         y_convert = sp.spherical_to_cartesian(y_spherical)
         z_convert = sp.spherical_to_cartesian(z_spherical)
         x_cart = (1., 0., 0.)
+        minus_x_cart = (-1., 0., 0.)
         y_cart = (0., 1., 0.)
         z_cart = (0., 0., 1.)
 
         for xconv, xcart in zip(x_convert, x_cart):
+            self.assertAlmostEqual(xconv, xcart)
+
+        for xconv, xcart in zip(minus_x_convert, minus_x_cart):
             self.assertAlmostEqual(xconv, xcart)
 
         for yconv, ycart in zip(y_convert, y_cart):
@@ -25,6 +32,12 @@ class TestSpherical_to_cartesian(TestCase):
 
         for zconv, zcart in zip(z_convert, z_cart):
             self.assertAlmostEqual(zconv, zcart)
+
+    def test_spherical_to_cartesian_one_3D_complex_point(self):
+        x_iy_spherical = (1. + 1.j, pi/2 + 1.j * pi/2, 1.j * pi/2)
+        x_iy_convert = sp.spherical_to_cartesian(x_iy_spherical)
+        x_iy_cart = (1., 1.j, 0.)
+        self.assertTrue(np.array_equal(np.round(x_iy_convert, 7), np.round(x_iy_cart, 7)))
 
     def test_spherical_to_cartesian_one_4D_point(self):
         x_spherical = (1., 1., pi / 2, 0.)
@@ -46,7 +59,13 @@ class TestSpherical_to_cartesian(TestCase):
         for zconv, zcart in zip(z_convert, z_cart):
             self.assertAlmostEqual(zconv, zcart)
 
-    def test_spherical_to_cartesian_3D_grid(self):
+    def test_spherical_to_cartesian_one_4D_complex_point(self):
+        x_iy_spherical = (1. + 1.j, 1. + 1.j, pi / 2 + 1.j * pi / 2, 1.j * pi / 2)
+        x_iy_convert = sp.spherical_to_cartesian(x_iy_spherical)
+        x_iy_cart = (1. + 1.j, 1., 1.j, 0.)
+        self.assertTrue(np.array_equal(np.round(x_iy_convert, 7), np.round(x_iy_cart, 7)))
+
+    def test_spherical_to_cartesian_3D_array(self):
         r_array = (1., 0.5, 0.0)
         theta_array = (0.0, pi/2)
         phi_array = (0.0, pi/2)
@@ -58,6 +77,65 @@ class TestSpherical_to_cartesian(TestCase):
         self.assertTrue(np.array_equal(np.round(x_conv, 7), x_grid))
         self.assertTrue(np.array_equal(np.round(y_conv, 7), y_grid))
         self.assertTrue(np.array_equal(np.round(z_conv, 7), z_grid))
+
+    def test_spherical_to_cartesian_3D_complex_array(self):
+        r_array = (1. + 1.j, 0.5, 0.0)
+        theta_array = (0.0, pi / 2 + 1.j * pi /2)
+        phi_array = (0.0, pi / 2 + 1.j * pi / 2)
+        spherical_grid = np.meshgrid(r_array, theta_array, phi_array, indexing='ij')
+        x_conv, y_conv, z_conv = sp.spherical_to_cartesian(spherical_grid)
+        x_grid = np.array([[[0., 0.], [1. + 1.j, 0.]], [[0., 0.], [0.5, 0.]], [[0., 0.], [0., 0.]]])
+        y_grid = np.array([[[0., 0.], [0., 1. + 1.j]], [[0., 0.], [0., 0.5]], [[0., 0.], [0., 0.]]])
+        z_grid = np.array([[[1. + 1.j, 1. +1.j], [0., 0.]], [[0.5, 0.5], [0., 0.]], [[0., 0.], [0., 0.]]])
+        self.assertTrue(np.array_equal(np.round(x_conv, 7), x_grid))
+        self.assertTrue(np.array_equal(np.round(y_conv, 7), y_grid))
+        self.assertTrue(np.array_equal(np.round(z_conv, 7), z_grid))
+
+
+class TestCartesian_to_spherical(TestCase):
+    def test_cartesian_to_spherical_one_3D_point(self):
+        x_cart = (1., 0., 0.)
+        x_m_cart = (-1., 0., 0.)
+        y_cart = (0., 1., 0.)
+        z_cart = (0., 0., 1.)
+        x_conv = sp.cartesian_to_spherical(x_cart)
+        x_m_conv = sp.cartesian_to_spherical(x_m_cart)
+        y_conv = sp.cartesian_to_spherical(y_cart)
+        z_conv = sp.cartesian_to_spherical(z_cart)
+        x_spherical = (1., pi / 2, 0.)
+        x_m_spherical = (1., pi / 2, pi)
+        y_spherical = (1., pi / 2, pi / 2)
+        z_spherical = (1., 0., 0.)
+        self.assertTrue(np.array_equal(np.round(x_conv, 7), np.round(x_spherical, 7)))
+        self.assertTrue(np.array_equal(np.round(x_m_conv, 7), np.round(x_m_spherical, 7)))
+        self.assertTrue(np.array_equal(np.round(y_conv, 7), np.round(y_spherical, 7)))
+        self.assertTrue(np.array_equal(np.round(z_conv, 7), np.round(z_spherical, 7)))
+
+    def test_cartesian_to_spherical_one_3D_complex_point(self):
+        x_iy_cart = (1., 1.j, 0.)
+        x_iy_conv = sp.cartesian_to_spherical(x_iy_cart)
+        x_iy_spherical = (1. + 1.j, pi / 2 + 1.j * pi / 2, 1.j * pi / 2 )
+        self.assertTrue(np.array_equal(np.round(x_iy_conv, 7), np.round(x_iy_spherical, 7)))
+
+    def test_cartesian_to_spherical_one_4D_point(self):
+        x_cart = (1., 1., 0., 0.)
+        y_cart = (1., 0., 1., 0.)
+        z_cart = (0., 0., 0., 1.)
+        x_conv = sp.cartesian_to_spherical(x_cart)
+        y_conv = sp.cartesian_to_spherical(y_cart)
+        z_conv = sp.cartesian_to_spherical(z_cart)
+        x_spherical = (1., 1., pi / 2, 0.)
+        y_spherical = (1., 1., pi / 2, pi / 2)
+        z_spherical = (0., 1., 0., 0.)
+        self.assertTrue(np.array_equal(np.round(x_conv, 7), np.round(x_spherical, 7)))
+        self.assertTrue(np.array_equal(np.round(y_conv, 7), np.round(y_spherical, 7)))
+        self.assertTrue(np.array_equal(np.round(z_conv, 7), np.round(z_spherical, 7)))
+
+    def test_cartesian_to_spherical_one_4D_complex_point(self):
+        x_iy_cart = (1. + 1.j, 1., 1.j, 0.)
+        x_iy_conv = sp.cartesian_to_spherical(x_iy_cart)
+        x_iy_spherical = (1. + 1.j, 1. + 1.j, pi / 2 + 1.j * pi / 2, 1.j * pi / 2)
+        self.assertTrue(np.array_equal(np.round(x_iy_conv, 7), np.round(x_iy_spherical, 7)))
 
 
 class TestSpherical_to_cartesian_grid(TestCase):
@@ -120,6 +198,7 @@ class TestCalculate_spherical_gradient(TestCase):
         for correct, calculated in zip(correct_gradient, calculated_gradient):
             self.assertTrue(np.array_equal(np.round(calculated, 7), np.round(correct, 7)))
 
+
 class TestCalculate_spherical_divergence(TestCase):
     def test_divergence_radial(self):
         r_array = np.linspace(1E-2, 1., 10000)
@@ -130,7 +209,8 @@ class TestCalculate_spherical_divergence(TestCase):
         correct_divergence = 3* np.ones_like(r_grid)
         calculated_divergence = sp.calculate_spherical_divergence(vector_funct, (r_array, theta_array, phi_array),
                                                                   (r_grid, t_grid, p_grid))
-        self.assertTrue(np.array_equal(np.round(calculated_divergence, 3), correct_divergence)) # Allow for numerical error
+        self.assertTrue(np.array_equal(np.round(calculated_divergence, 3), correct_divergence))
+        # Allow for numerical error
 
 
 if __name__ == '__main__':

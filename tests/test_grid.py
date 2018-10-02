@@ -191,7 +191,5 @@ class TestSphericalGrid(TestCase):
         self.assertTrue(np.array_equal(np.round(calculated_volume, 7), np.round(correct_volume, 7)))
 
 
-
-
 if __name__ == '__main__':
     unittest.main()
