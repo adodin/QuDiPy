@@ -242,6 +242,45 @@ class TestCalculate_cartesian_vector_from_matrix(TestCase):
         self.assertTrue(np.array_equal(la.calculate_cartesian_spin_vector_from_matrix(z), (0, 0, 0, 1)))
 
 
+class TestCommutator(TestCase):
+    def test_cartesian_commutator(self):
+        # Define Spin Basis Operators
+        s0 = la.CartesianSpinOperator((0, 0, 0, 0))
+        si = la.CartesianSpinOperator((1, 0, 0, 0))
+        sx = la.CartesianSpinOperator((0, 1, 0, 0))
+        sy = la.CartesianSpinOperator((0, 0, 1, 0))
+        sz = la.CartesianSpinOperator((0, 0, 0, 1))
+        self.assertEqual(s0, la.commutator(si, sx))
+        self.assertEqual(la.commutator(sx, sy), -1 * la.commutator(sy, sx))
+        self.assertEqual(2j*sz, la.commutator(sx, sy))
+
+    def test_spherical_commutator(self):
+        # Define Spin Basis Operators
+        s0 = la.SphericalSpinOperator((0, 0, 0, 0))
+        si = la.SphericalSpinOperator((1, 0, 0, 0))
+        sx = la.SphericalSpinOperator((0, 1, np.pi/2, 0))
+        sy = la.SphericalSpinOperator((0, 1, np.pi/2, np.pi/2))
+        sz = la.SphericalSpinOperator((0, 1, 0, 0))
+        self.assertEqual(s0, la.commutator(si, sx))
+        self.assertEqual(la.commutator(sx, sy), -1 * la.commutator(sy, sx))
+        self.assertEqual(2j * sz, la.commutator(sx, sy))
+
+    def test_mixed_commutator(self):
+        # Define Spin Basis Operators
+        s0c = la.CartesianSpinOperator((0, 0, 0, 0))
+        sic = la.CartesianSpinOperator((1, 0, 0, 0))
+        sxc = la.CartesianSpinOperator((0, 1, 0, 0))
+        syc = la.CartesianSpinOperator((0, 0, 1, 0))
+        szc = la.CartesianSpinOperator((0, 0, 0, 1))
+        # Define Spin Basis Operators
+        s0s = la.SphericalSpinOperator((0, 0, 0, 0))
+        sis = la.SphericalSpinOperator((1, 0, 0, 0))
+        sxs = la.SphericalSpinOperator((0, 1, np.pi / 2, 0))
+        sys = la.SphericalSpinOperator((0, 1, np.pi / 2, np.pi / 2))
+        szs = la.SphericalSpinOperator((0, 1, 0, 0))
+        self.assertEqual(s0c, la.commutator(sis, sxc))
+        self.assertEqual(la.commutator(sxs, syc), -1 * la.commutator(sys, sxc))
+        self.assertEqual(2j * szs, la.commutator(sxc, sys))
 
 
 if __name__ == '__main__':
