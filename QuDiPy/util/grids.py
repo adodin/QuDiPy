@@ -98,3 +98,32 @@ class SphericalGrid(Grid):
         differentials = calculate_differentials(self.coordinates)
         diff_grid = np.meshgrid(*differentials, indexing='ij')
         return sp.calculate_spherical_volume_element(self.grid[0], self.grid[1], diff_grid)
+
+
+class GridData:
+    def __getitem__(self, item):
+        if type(self.data) == tuple:
+            data = tuple(d[item] for d in self.data)
+        else:
+            data = self.data[item]
+        coord = self.grid[item]
+        return data, coord
+
+    def __iter__(self):
+        if type(self.data) == tuple:
+            flat_data = tuple(d.flatten() for d in self.data)
+            data_iter = zip(*flat_data)
+        else:
+            data_iter = self.data.flatten()
+        grid_iter = self.grid.__iter__()
+        return zip(data_iter, grid_iter)
+
+    def __init__(self, data, grid):
+        for g in grid.grid:
+            if type(data) == tuple:
+                for d in data:
+                    assert np.shape(g) == np.shape(d)
+            else:
+                assert np.shape(g) == np.shape(data)
+        self.data = data
+        self.grid = grid

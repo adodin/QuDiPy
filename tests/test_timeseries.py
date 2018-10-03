@@ -9,7 +9,7 @@ class TestTimeSeries(TestCase):
         series = ts.TimeSeries()
         self.assertEqual([], series.data)
         self.assertEqual([], series.time)
-        self.assertEqual(0, series.length)
+        self.assertEqual(0, len(series))
 
     def test_timeseries_append(self):
         series = ts.TimeSeries()
@@ -27,6 +27,20 @@ class TestTimeSeries(TestCase):
         for de, te, (d, t) in zip(['foo', 'bar'], [0., 1.], series):
             self.assertEqual(d, de)
             self.assertEqual(t, te)
+
+    def test_timeseries_getitem(self):
+        series = ts.TimeSeries()
+        series.append('foo', 0.)
+        series.append('bar', 1.)
+        self.assertEqual(series[0], ('foo', 0.))
+        self.assertEqual(series[1], ('bar', 1.))
+
+    def test_timeseries_len(self):
+        series = ts.TimeSeries()
+        series.append('foo', 0.)
+        self.assertEqual(1, len(series))
+        series.append('bar', 1.)
+        self.assertEqual(2, len(series))
 
     def test_timeseries_equality(self):
         series1 = ts.TimeSeries()

@@ -129,7 +129,6 @@ class TestCalculate_cartesian_divergence(TestCase):
         self.assertTrue(np.array_equal(np.round(calculated_divergence, 7), correct_divergence))
 
 
-
 class TestGrid(TestCase):
     def test_grid_equality_override(self):
         x = (0., 1., 2.)
@@ -168,6 +167,59 @@ class TestGrid(TestCase):
             self.assertEqual(gt, (xt,))
         for g2, x1t, x2t in zip(grid2d, x1repeat, x2repeat):
             self.assertEqual(g2, (x1t, x2t))
+
+
+class TestGridData(TestCase):
+
+    def test_grid_data_getitem_overload_1D_data(self):
+        x1 = (1., 2.)
+        x2 = (100, 200)
+        grid2d = gr.CartesianGrid((x1, x2))
+        data1d = np.array([['a', 'b'], ['c', 'd']])
+        d1d2 = grid2d.grid[0] + grid2d.grid[1]
+        g_d = gr.GridData(data1d, grid2d)
+        g_d2 = gr.GridData(d1d2, grid2d)
+        self.assertEqual(('a', (1., 100)), g_d[0, 0])
+        self.assertEqual(('c', (2., 100)), g_d[1, 0])
+        self.assertEqual(('b', (1., 200)), g_d[0, 1])
+        self.assertEqual(('d', (2., 200)), g_d[1, 1])
+        self.assertEqual((101, (1., 100)), g_d2[0, 0])
+        self.assertEqual((102, (2., 100)), g_d2[1, 0])
+        self.assertEqual((201, (1., 200)), g_d2[0, 1])
+        self.assertEqual((202, (2., 200)), g_d2[1, 1])
+
+    def test_grid_data_getitem_overload_2D_data(self):
+        x1 = (1., 2.)
+        x2 = (100, 200)
+        grid2d = gr.CartesianGrid((x1, x2))
+        data2d = (np.array([['a', 'b'], ['c', 'd']]), np.array([[1, 2], [3, 4]]))
+        g_d = gr.GridData(data2d, grid2d)
+        self.assertEqual((('a', 1), (1., 100)), g_d[0, 0])
+
+    def test_grid_data_iter_overload_1D_data(self):
+        x1 = (1., 2.)
+        x1r = (1., 1., 2., 2.)
+        x2 = (100, 200)
+        x2r = (100, 200, 100, 200)
+        data1d = np.array([['a', 'b'], ['c', 'd']])
+        data1d_flattened = data1d.flatten()
+        grid2d = gr.CartesianGrid((x1, x2))
+        g_d = gr.GridData(data1d, grid2d)
+        for gdt, de, ge in zip(g_d, data1d_flattened, grid2d):
+            self.assertEqual((de, ge), gdt)
+        for gdt, de, ge1, ge2 in zip(g_d, data1d_flattened, x1r, x2r):
+            self.assertEqual((de, (ge1, ge2)), gdt)
+
+    def test_grid_data_iter_overload_2D_data(self):
+        x1 = (1., 2.)
+        x2 = (100, 200)
+        data2d = (np.array([['a', 'b'], ['c', 'd']]), np.array([[1, 2], [3, 4]]))
+        data1f = data2d[0].flatten()
+        data2f = data2d[1].flatten()
+        grid2d = gr.CartesianGrid((x1, x2))
+        g_d = gr.GridData(data2d, grid2d)
+        for gdt, de1, de2, ge in zip(g_d, data1f, data2f, grid2d):
+            self.assertEqual(((de1, de2), ge), gdt)
 
 class TestCartesianGrid(TestCase):
     def test_cartesian_grid_init(self):

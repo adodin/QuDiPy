@@ -10,10 +10,16 @@ class TimeSeries:
     def append(self, data, time):
         self.data.append(data)
         self.time.append(time)
-        self.length += 1
+        self.__length += 1
+
+    def __getitem__(self, item):
+        return self.data[item], self.time[item]
 
     def __iter__(self):
         return zip(self.data, self.time)
+
+    def __len__(self):
+        return self.__length
 
     def __eq__(self, other):
         if len(self.data) > 0 and hasattr(self.data[0], 'round'):
@@ -30,6 +36,4 @@ class TimeSeries:
     def __init__(self):
         self.data = []
         self.time = []
-        self.length = 0
-
-        self.__index = 0
+        self.__length = 0
