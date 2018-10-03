@@ -12,6 +12,14 @@ class Grid:
         # Float equality of Grids
         return np.array_equal(np.round(self.grid, 7), np.round(other.grid, 7))
 
+    def __getitem__(self, item):
+        coord = tuple(c[item] for c in self.grid)
+        return coord
+
+    def __iter__(self):
+        flat_grids = tuple(c.flatten() for c in self.grid)
+        return zip(*flat_grids)
+
     def __init__(self, coordinates):
         self.coordinates = coordinates
         self.grid = self.calculate_grid()

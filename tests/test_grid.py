@@ -147,6 +147,27 @@ class TestGrid(TestCase):
         self.assertNotEqual(grid1, grid3)
         self.assertNotEqual(grid2, grid3)
 
+    def test_grid_getitem_override(self):
+        x1 = (1., 2., 3.)
+        x2 = (100, 200, 300)
+        grid1d = gr.CartesianGrid((x1,))
+        grid2d = gr.CartesianGrid((x1, x2))
+        self.assertEqual(grid1d[0], (1.,))
+        self.assertEqual(grid1d[2], (3.,))
+        self.assertEqual(grid2d[0, 0], (1., 100))
+        self.assertEqual(grid2d[0, 1], (1., 200))
+
+    def test_grid_iter_method(self):
+        x1 = (1., 2., 3.)
+        x1repeat = (1., 1., 1., 2., 2., 2., 3., 3., 3.)
+        x2 = (100, 200, 300)
+        x2repeat = (100, 200, 300, 100, 200, 300, 100, 200, 300)
+        grid1d = gr.CartesianGrid((x1,))
+        grid2d = gr.CartesianGrid((x1, x2))
+        for gt, xt in zip(grid1d, x1):
+            self.assertEqual(gt, (xt,))
+        for g2, x1t, x2t in zip(grid2d, x1repeat, x2repeat):
+            self.assertEqual(g2, (x1t, x2t))
 
 class TestCartesianGrid(TestCase):
     def test_cartesian_grid_init(self):

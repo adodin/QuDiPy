@@ -13,7 +13,7 @@ class TimeSeries:
         self.length += 1
 
     def __iter__(self):
-        return self
+        return zip(self.data, self.time)
 
     def __eq__(self, other):
         if len(self.data) > 0 and hasattr(self.data[0], 'round'):
@@ -26,13 +26,6 @@ class TimeSeries:
         other_time_rounded = np.round(other.time, 7)
         time_equality = np.array_equal(self_time_rounded, other_time_rounded)
         return data_equality and time_equality
-
-    def __next__(self):
-        if self.__index == self.length:
-            raise StopIteration
-        d, t = (self.data[self.__index], self.time[self.__index])
-        self.__index += 1
-        return d, t
 
     def __init__(self):
         self.data = []
