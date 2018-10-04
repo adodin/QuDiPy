@@ -283,5 +283,35 @@ class TestCommutator(TestCase):
         self.assertEqual(2j * szs, la.commutator(sxc, sys))
 
 
+class TestGetCartesianVectors(TestCase):
+    def test_get_single_cartesian_vector(self):
+        sx = la.CartesianSpinOperator((0, 1, 0, 0))
+        self.assertEqual((0, 1, 0, 0), la.get_cartesian_vector(sx))
+        self.assertEqual((0, 1, 0, 0), la.get_cartesian_vectors(sx))
+
+    def test_get_1D_array_cartesian_vectors(self):
+        si = la.CartesianSpinOperator((1, 0, 0, 0))
+        sx = la.CartesianSpinOperator((0, 1, 0, 0))
+        sy = la.CartesianSpinOperator((0, 0, 1, 0))
+        sz = la.CartesianSpinOperator((0, 0, 0, 1))
+        spins = np.array([si, sx, sy, sz])
+        calc = la.get_cartesian_vectors(spins)
+        expected = (np.array([1, 0, 0, 0]), np.array([0, 1, 0, 0]), np.array([0, 0, 1, 0]), np.array([0, 0, 0, 1]))
+        for c, e in zip(calc, expected):
+            self.assertTrue(np.array_equal(c, e))
+
+    def test_get_1D_array_cartesian_vectors(self):
+        s1 = la.CartesianSpinOperator((1., 2., 3., 4.))
+        s2 = la.CartesianSpinOperator((1.1, 1.2, 1.3, 1.4))
+        s3 = la.CartesianSpinOperator((1.5, 2.5, 3.5, 4.5))
+        s4 = la.CartesianSpinOperator((10., 20., 30., 40.))
+        spins = np.array([[s1, s2], [s3, s4]])
+        calc = la.get_cartesian_vectors(spins)
+        expected = (np.array([[1., 1.1], [1.5, 10.]]), np.array([[2., 1.2], [2.5, 20.]]),
+                    np.array([[3., 1.3], [3.5, 30.]]), np.array([[4., 1.4], [4.5, 40.]]))
+        for c, e in zip(calc, expected):
+            self.assertTrue(np.array_equal(c, e))
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -105,3 +105,10 @@ class SphericalSpinOperator(SpinOperator):
         assert len(vector) == 4
         # Call SpinObservable Constructor with Spherical Conversion
         super().__init__(vector)
+
+
+def get_cartesian_vector(operator):
+    return operator.convert_cartesian()
+
+
+get_cartesian_vectors = np.vectorize(get_cartesian_vector)

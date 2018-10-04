@@ -4,6 +4,7 @@ import QuDiPy.util.grids as gr
 import QuDiPy.util.spherical as sp
 import numpy as np
 from numpy import pi
+import QuDiPy.util.linalg as la
 
 
 class TestCalculate_differentials(TestCase):
@@ -262,6 +263,47 @@ class TestSphericalGrid(TestCase):
         for correct, calculated in zip(correct_grid, calculated_grid):
             self.assertTrue(np.array_equal(correct, calculated))
         self.assertTrue(np.array_equal(np.round(calculated_volume, 7), np.round(correct_volume, 7)))
+
+
+class TestVectorizeOperatorGrid(TestCase):
+    def test_vectorize_cartesian(self):
+        si = la.CartesianSpinOperator((1, 0, 0, 0))
+        sx = la.CartesianSpinOperator((0, 1, 0, 0))
+        sy = la.CartesianSpinOperator((0, 0, 1, 0))
+        sz = la.CartesianSpinOperator((0, 0, 0, 1))
+        ops = np.array([[si, sx], [sy, sz]])
+        expected = (np.array([[1, 0], [0, 0]]), np.array([[0, 1], [0, 0]]),
+                    np.array([[0, 0], [1, 0]]), np.array([[0, 0], [0, 1]]))
+
+        x1 = (0, 1)
+        x2 = (0, 1)
+        grid = gr.CartesianGrid((x1, x2))
+
+        op_grid = gr.GridData(ops, grid)
+        expected = gr.GridData(expected, grid)
+        calculated = gr.vectorize_operator_grid(op_grid)
+
+        self.assertEqual(expected, calculated)
+
+    def test_vectorize_spherical(self):
+        si = la.SphericalSpinOperator((1, 0, 0, 0))
+        sx = la.SphericalSpinOperator((0, 1, pi/2, 0))
+        sy = la.SphericalSpinOperator((0, 1, pi/2, pi/2))
+        sz = la.SphericalSpinOperator((0, 1, 0, 0))
+        ops = np.array([[si, sx], [sy, sz]])
+        expected = (np.array([[1, 0], [0, 0]]), np.array([[0, 1], [0, 0]]),
+                    np.array([[0, 0], [1, 0]]), np.array([[0, 0], [0, 1]]))
+
+        x1 = (0, 1)
+        x2 = (0, 1)
+        grid = gr.CartesianGrid((x1, x2))
+
+        op_grid = gr.GridData(ops, grid)
+        expected = gr.GridData(expected, grid)
+        calculated = gr.vectorize_operator_grid(op_grid)
+
+        self.assertEqual(expected, calculated)
+
 
 
 if __name__ == '__main__':

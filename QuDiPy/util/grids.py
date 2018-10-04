@@ -5,6 +5,7 @@ Written by: Amro Dodin (Willard Group - MIT)
 
 import numpy as np
 import QuDiPy.util.spherical as sp
+import QuDiPy.util.linalg as la
 
 
 class Grid:
@@ -78,9 +79,6 @@ class CartesianGrid(Grid):
         return calculate_cartesian_divergence(vector_funct, self.coordinates)
 
     def __init__(self, coordinates):
-        for coord in coordinates:
-            for c in coord:
-                assert c.imag == 0
         super().__init__(coordinates)
 
 
@@ -118,6 +116,11 @@ class GridData:
         grid_iter = self.grid.__iter__()
         return zip(data_iter, grid_iter)
 
+    def __eq__(self, other):
+        grid_eq = self.grid == other.grid
+        dat_eq = np.array_equal(np.round(self.data, 7), np.round(other.data, 7))
+        return grid_eq and dat_eq
+
     def __init__(self, data, grid):
         for g in grid.grid:
             if type(data) == tuple:
@@ -127,3 +130,9 @@ class GridData:
                 assert np.shape(g) == np.shape(data)
         self.data = data
         self.grid = grid
+
+
+def vectorize_operator_grid(operator_grid):
+    vec_data = la.get_cartesian_vectors(operator_grid.data)
+    grid = operator_grid.grid
+    return type(operator_grid)(vec_data, grid)
