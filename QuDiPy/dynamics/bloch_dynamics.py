@@ -6,6 +6,7 @@ This is a generalization of the Bloch type equations including both the NMR and 
 
 from QuDiPy.dynamics.unitary_dynamics import unitary_derivative
 import QuDiPy.util.linalg as la
+import numpy as np
 
 
 def bloch_derivative(rho, ham, gdiss, gdeph, rpump=0.):
@@ -16,3 +17,11 @@ def bloch_derivative(rho, ham, gdiss, gdeph, rpump=0.):
     zdot = rpump * (1 - z) - gdiss * (1 + z)
     bd = la.CartesianSpinOperator((0, xdot, ydot, zdot))
     return ud + bd
+
+
+array_bloch_derivative = np.vectorize(bloch_derivative, excluded={'ham', 'gdiss', 'gdeph', 'rpump'})
+
+
+def grid_bloch_derivative(rho_grid, ham, gdiss, gdeph, rpump=0.):
+    data = array_bloch_derivative(rho_grid.data, ham, gdiss, gdeph, rpump)
+    return rho_grid.like(data)

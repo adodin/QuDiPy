@@ -26,15 +26,20 @@ def commutator(a, b):
 
 
 class Operator:
-    def dot(self, other):
-        assert len(self.vector) == len(other.vector)
-        assert np.shape(self.matrix)[0] == np.shape(self.matrix)[1]
-        assert np.shape(other.matrix)[0] == np.shape(other.matrix)[1]
-        assert np.shape(self.matrix) == np.shape(other.matrix)
-        return np.trace(np.conj(self.matrix.T)@other.matrix)/(np.shape(self.matrix)[0])
+
+    def __str__(self):
+        vec_str = 'Vector: ' + str(self.vector) + '\n'
+        mat_str = 'Matrix: ' + str(self.matrix)
+        return vec_str + mat_str
+
+    def __repr__(self):
+        class_str = str(type(self)) + '\n'
+        id_str = 'ID: ' + str(id(self)) + '\n'
+        op_str = str(self)
+        return class_str + id_str + op_str
 
     def __eq__(self, other):
-        return np.array_equal(np.round(self.matrix, 7), np.round(other.matrix, 7))
+        return np.array_equal(self.matrix, other.matrix)
 
     def __mul__(self, other):
         return self.dot(other)
@@ -64,9 +69,22 @@ class Operator:
         assert norm >= 0.
         return norm
 
+    def __round__(self, n=None):
+        if n is None:
+            n = 0
+        rounded_vec = np.round(self.vector, decimals=n)
+        return type(self)(type(self.vector)(rounded_vec))
+
     def __init__(self, vector):
         self.vector = vector
         self.matrix = self.calculate_matrix()
+
+    def dot(self, other):
+        assert len(self.vector) == len(other.vector)
+        assert np.shape(self.matrix)[0] == np.shape(self.matrix)[1]
+        assert np.shape(other.matrix)[0] == np.shape(other.matrix)[1]
+        assert np.shape(self.matrix) == np.shape(other.matrix)
+        return np.trace(np.conj(self.matrix.T) @ other.matrix) / (np.shape(self.matrix)[0])
 
 
 class SpinOperator(Operator):

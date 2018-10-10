@@ -90,6 +90,14 @@ class TestCartesianSpinObservable(TestCase):
         expected_diff_ix = la.CartesianSpinOperator((1, -1, 0, 0))
         self.assertEqual(diff_ix, expected_diff_ix)
 
+    def test_round_overload(self):
+        test_vec = (1.1, 0., 0., 0.)
+        rounded_vec = (1., 0., 0., 0.)
+        test_op = la.CartesianSpinOperator(test_vec)
+        expected = la.CartesianSpinOperator(rounded_vec)
+        calculated = round(test_op)
+        self.assertEqual(expected, calculated)
+
     def test_calculate_matrix(self):
         """ Tests that matrices are correctly constructed from the Observable """
         si_mat = np.array([[1., 0.], [0., 1.]])
@@ -148,33 +156,33 @@ class TestSphericalSpinObservable(TestCase):
 
     def test_matmul(self):
         prodiz = self.si @ self.sz
-        self.assertEqual(prodiz, self.sz)
+        self.assertAlmostEqual(prodiz, self.sz)
         prodxz = self.sx @ self.sz
-        self.assertEqual(prodxz, -1j * self.sy)
+        self.assertAlmostEqual(prodxz, -1j * self.sy)
 
     def test_cross_equality(self):
         cart_x = la.CartesianSpinOperator((0, 1, 0, 0))
-        self.assertEqual(self.sx, cart_x)
+        self.assertAlmostEqual(self.sx, cart_x)
 
     def test_add_overload(self):
         calc = self.si + self.sx
         expected = la.CartesianSpinOperator((1, 1, 0, 0))
-        self.assertEqual(calc, expected)
+        self.assertAlmostEqual(calc, expected)
 
     def test_rmult_real_overload(self):
         calc = -2 * self.sx
         expected = la.CartesianSpinOperator((0, -2, 0, 0))
-        self.assertEqual(calc, expected)
+        self.assertAlmostEqual(calc, expected)
 
     def test_rmult_complex_overload(self):
         calc = (1 + 1j) * self.sx
         expected = la.CartesianSpinOperator((0, 1 + 1j, 0, 0))
-        self.assertEqual(calc, expected)
+        self.assertAlmostEqual(calc, expected)
 
     def test_sub_overload(self):
         calc = self.si - self.sx
         expected = la.CartesianSpinOperator((1, -1, 0, 0))
-        self.assertEqual(calc, expected)
+        self.assertAlmostEqual(calc, expected)
 
     def test_init_length_assertion(self):
         """ Tests that the constructor correctly raises initialization error if the wrong length input provided """
@@ -278,9 +286,9 @@ class TestCommutator(TestCase):
         sxs = la.SphericalSpinOperator((0, 1, np.pi / 2, 0))
         sys = la.SphericalSpinOperator((0, 1, np.pi / 2, np.pi / 2))
         szs = la.SphericalSpinOperator((0, 1, 0, 0))
-        self.assertEqual(s0c, la.commutator(sis, sxc))
-        self.assertEqual(la.commutator(sxs, syc), -1 * la.commutator(sys, sxc))
-        self.assertEqual(2j * szs, la.commutator(sxc, sys))
+        self.assertAlmostEqual(s0c, la.commutator(sis, sxc))
+        self.assertAlmostEqual(la.commutator(sxs, syc), -1 * la.commutator(sys, sxc))
+        self.assertAlmostEqual(2j * szs, la.commutator(sxc, sys))
 
 
 class TestGetCartesianVectors(TestCase):

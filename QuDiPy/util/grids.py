@@ -26,6 +26,10 @@ class Grid:
         self.grid = self.calculate_grid()
         self.volume = self.calculate_volume()
 
+    @property
+    def shape(self):
+        return np.shape(self.grid[0])
+
 
 def calculate_cartesian_grid(coordinates):
     return np.meshgrid(*coordinates, indexing='ij')
@@ -116,9 +120,76 @@ class GridData:
         grid_iter = self.grid.__iter__()
         return zip(data_iter, grid_iter)
 
+    def __add__(self, other):
+        assert self.grid == other.grid
+        assert np.shape(self.data) == np.shape(other.data)
+        if type(self.data) == tuple:
+            dat_sum = []
+            for s, o in zip(self.data, other.data):
+                dat_sum.append(s + o)
+            dat_sum = tuple(dat_sum)
+        else:
+            dat_sum = self.data + other.data
+        return self.like(dat_sum)
+
+    def __mul__(self, other):
+        assert self.grid == other.grid
+        assert np.shape(self.data) == np.shape(other.data)
+        if type(self.data) == tuple:
+            prod_sum = []
+            for s, o in zip(self.data, other.data):
+                prod_sum.append(s * o)
+            prod_sum = tuple(prod_sum)
+        else:
+            prod_sum = self.data * other.data
+        return self.like(prod_sum)
+
+    def __rmul__(self, other):
+        assert np.shape(self.data)
+        if type(self.data) == tuple:
+            prod_sum = []
+            for s in self.data:
+                prod_sum.append(other * s)
+            prod_sum = tuple(prod_sum)
+        else:
+            prod_sum = other * self.data
+        return self.like(prod_sum)
+
+    def __matmul__(self, other):
+        assert self.grid == other.grid
+        assert np.shape(self.data) == np.shape(other.data)
+        if type(self.data) == tuple:
+            prod_sum = []
+            for s, o in zip(self.data, other.data):
+                prod_sum.append(s @ o)
+            prod_sum = tuple(prod_sum)
+        else:
+            prod_sum = self.data @ other.data
+        return self.like(prod_sum)
+
+    def __sub__(self, other):
+        assert self.grid == other.grid
+        assert np.shape(self.data) == np.shape(other.data)
+        if type(self.data) == tuple:
+            dat_sum = []
+            for s, o in zip(self.data, other.data):
+                dat_sum.append(s - o)
+            dat_sum = tuple(dat_sum)
+        else:
+            dat_sum = self.data - other.data
+        return self.like(dat_sum)
+
+    def __abs__(self):
+        return abs(np.sum(self.data))
+
     def __eq__(self, other):
         grid_eq = self.grid == other.grid
-        dat_eq = np.array_equal(np.round(self.data, 7), np.round(other.data, 7))
+        if type(self.data) == tuple:
+            dat_eq = True
+            for s, o in zip(self.data, other.data):
+                dat_eq = dat_eq and np.array_equal(s, o)
+        else:
+            dat_eq = np.array_equal(self.data, other.data)
         return grid_eq and dat_eq
 
     def __init__(self, data, grid):
@@ -131,8 +202,20 @@ class GridData:
         self.data = data
         self.grid = grid
 
+    def like(self, data):
+        return type(self)(data, self.grid)
+
 
 def vectorize_operator_grid(operator_grid):
     vec_data = la.get_cartesian_vectors(operator_grid.data)
-    grid = operator_grid.grid
-    return type(operator_grid)(vec_data, grid)
+    return operator_grid.like(vec_data)
+
+
+def initialize_operator_grid(grid, operator_type, i_coord=None):
+    ops = []
+    for coords in grid:
+        if i_coord is not None:
+            coords = (i_coord, *coords)
+        ops.append(operator_type(coords))
+    ops = np.reshape(ops, grid.shape)
+    return GridData(ops, grid)

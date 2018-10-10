@@ -21,8 +21,10 @@ class Testrk_integrate(TestCase):
 
         for y, t in zip(y_correct, t_correct):
             series_correct.append(y, t)
+
         series_calculated = rk.rk_integrate(y0, t0, dt, tf, deriv)
-        self.assertEqual(series_correct, series_calculated)
+
+        self.assertAlmostEqual(series_correct, series_calculated)
 
     def test_rk_quadratic(self):
         def deriv(y, t):
@@ -40,7 +42,7 @@ class Testrk_integrate(TestCase):
         for y, t in zip(y_correct, t_correct):
             series_correct.append(y, t)
         series_calculated = rk.rk_integrate(y0, t0, dt, tf, deriv)
-        self.assertEqual(series_correct, series_calculated)
+        self.assertAlmostEqual(series_correct, series_calculated)
 
     def test_rk_exponential(self):
         def deriv(y, t):
@@ -58,7 +60,7 @@ class Testrk_integrate(TestCase):
         for y, t in zip(y_correct, t_correct):
             series_correct.append(y, t)
         series_calculated = rk.rk_integrate(y0, t0, dt, tf, deriv)
-        self.assertEqual(series_correct, series_calculated)
+        self.assertAlmostEqual(series_correct, series_calculated)
 
 
 if __name__ == '__main__':

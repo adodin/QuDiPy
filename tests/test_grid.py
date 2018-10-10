@@ -91,19 +91,6 @@ class TestCalculate_cartesian_gradient(TestCase):
         for correct, calculated in zip(correct_gradient, calculated_gradient):
             self.assertTrue(np.array_equal(np.round(calculated, 7), np.round(correct, 7)))
 
-    ''' # Slow Test That should be run before push only
-    def test_calculate_cartesian_gradient_gausian(self):
-        x = np.linspace(-1., 1., 11)
-        y = np.linspace(-1., 1., 21)
-        z = np.linspace(0., 1., 100000)
-        x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
-        funct = np.exp(-z_grid ** 2)
-        correct_gradient = (np.zeros_like(x_grid), np.zeros_like(y_grid), -2 * z_grid * funct)
-        calculated_gradient = gr.calculate_cartesian_gradient(funct, (x, y, z))
-        for correct, calculated in zip(correct_gradient, calculated_gradient):
-            test = np.round(calculated, 4) == np.round(correct, 4)
-            sum_test = np.sum(test)
-            self.assertTrue(np.array_equal(np.round(calculated, 4), np.round(correct, 4))) # Up to Numerical Error'''
 
 
 class TestCalculate_cartesian_divergence(TestCase):
@@ -169,6 +156,13 @@ class TestGrid(TestCase):
         for g2, x1t, x2t in zip(grid2d, x1repeat, x2repeat):
             self.assertEqual(g2, (x1t, x2t))
 
+    def test_grid_shape(self):
+        x = (1., 2., 3.)
+        y = (1., 2., 3., 4.)
+        z = (5., 1.)
+        grid = gr.CartesianGrid((x, y, z))
+        self.assertEqual(grid.shape, (3, 4, 2))
+
 
 class TestGridData(TestCase):
 
@@ -221,6 +215,109 @@ class TestGridData(TestCase):
         g_d = gr.GridData(data2d, grid2d)
         for gdt, de1, de2, ge in zip(g_d, data1f, data2f, grid2d):
             self.assertEqual(((de1, de2), ge), gdt)
+
+    def test_grid_data_sum_1D_data(self):
+        x1 = (1., 2.)
+        x2 = (10, 20)
+        grid = gr.CartesianGrid((x1, x2))
+        d1 = np.array([[1., 2.], [3., 4.]])
+        d2 = np.array([[10., 20.], [30., 40.]])
+        d_sum = d1 + d2
+        expected = gr.GridData(d_sum, grid)
+        actual = gr.GridData(d1, grid) + gr.GridData(d2, grid)
+        self.assertEqual(expected, actual)
+
+    def test_grid_data_sum_2D_data(self):
+        x1 = (1., 2.)
+        x2 = (10, 20)
+        grid = gr.CartesianGrid((x1, x2))
+        d1 = np.array([[1., 2.], [3., 4.]])
+        d2 = np.array([[10., 20.], [30., 40.]])
+        d_sum_0 = d1 + d2
+        d_sum_1 = 2*d2 - d1
+        expected = gr.GridData((d_sum_0, d_sum_1), grid)
+        actual = gr.GridData((d1, -1*d1), grid) + gr.GridData((d2, 2*d2), grid)
+        self.assertEqual(expected, actual)
+
+    def test_grid_data_mul_1D_data(self):
+        x1 = (1., 2.)
+        x2 = (10, 20)
+        grid = gr.CartesianGrid((x1, x2))
+        d1 = np.array([[1., 2.], [3., 4.]])
+        d2 = np.array([[10., 20.], [30., 40.]])
+        d_sum = d1 * d2
+        expected = gr.GridData(d_sum, grid)
+        actual = gr.GridData(d1, grid) * gr.GridData(d2, grid)
+        self.assertEqual(expected, actual)
+
+    def test_grid_data_mul_2D_data(self):
+        x1 = (1., 2.)
+        x2 = (10, 20)
+        grid = gr.CartesianGrid((x1, x2))
+        d1 = np.array([[1., 2.], [3., 4.]])
+        d2 = np.array([[10., 20.], [30., 40.]])
+        d_sum_0 = d1 * d2
+        d_sum_1 = 2 * d2 * -1 * d1
+        expected = gr.GridData((d_sum_0, d_sum_1), grid)
+        actual = gr.GridData((d1, -1 * d1), grid) * gr.GridData((d2, 2 * d2), grid)
+        self.assertEqual(expected, actual)
+
+    def test_grid_data_diff_1D_data(self):
+        x1 = (1., 2.)
+        x2 = (10, 20)
+        grid = gr.CartesianGrid((x1, x2))
+        d1 = np.array([[1., 2.], [3., 4.]])
+        d2 = np.array([[10., 20.], [30., 40.]])
+        d_sum = d1 - d2
+        expected = gr.GridData(d_sum, grid)
+        actual = gr.GridData(d1, grid) - gr.GridData(d2, grid)
+        self.assertEqual(expected, actual)
+
+    def test_grid_data_diff_2D_data(self):
+        x1 = (1., 2.)
+        x2 = (10, 20)
+        grid = gr.CartesianGrid((x1, x2))
+        d1 = np.array([[1., 2.], [3., 4.]])
+        d2 = np.array([[10., 20.], [30., 40.]])
+        d_sum_0 = d1 - d2
+        d_sum_1 = -2 * d2 - d1
+        expected = gr.GridData((d_sum_0, d_sum_1), grid)
+        actual = gr.GridData((d1, -1 * d1), grid) - gr.GridData((d2, 2 * d2), grid)
+        self.assertEqual(expected, actual)
+
+    def test_grid_data_rmul_1D_data(self):
+        x1 = (1., 2.)
+        x2 = (10, 20)
+        grid = gr.CartesianGrid((x1, x2))
+        d1 = np.array([[1., 2.], [3., 4.]])
+        d_sum = 2*d1
+        expected = gr.GridData(d_sum, grid)
+        actual = 2*gr.GridData(d1, grid)
+        self.assertEqual(expected, actual)
+
+    def test_grid_data_rmul_2D_data(self):
+        x1 = (1., 2.)
+        x2 = (10, 20)
+        grid = gr.CartesianGrid((x1, x2))
+        d1 = np.array([[1., 2.], [3., 4.]])
+        d2 = np.array([[10., 20.], [30., 40.]])
+        d_sum_0 = 2 * d1
+        d_sum_1 = 2 * d2
+        expected = gr.GridData((d_sum_0, d_sum_1), grid)
+        actual = 2 * gr.GridData((d1, d2), grid)
+        self.assertEqual(expected, actual)
+
+    def test_grid_data_like(self):
+        x1 = (1., 2.)
+        x2 = (100, 200)
+        data2d = (np.array([['a', 'b'], ['c', 'd']]), np.array([[1, 2], [3, 4]]))
+        grid2d = gr.CartesianGrid((x1, x2))
+        g_d = gr.GridData(data2d, grid2d)
+        data2d_other = (np.array([['e', 'f'], ['g', 'h']]), np.array([[10, 20], [30, 40]]))
+        g_expected = gr.GridData(data2d_other, grid2d)
+        g_test = g_d.like(data2d_other)
+        self.assertEqual(g_test, g_expected)
+
 
 class TestCartesianGrid(TestCase):
     def test_cartesian_grid_init(self):
@@ -302,7 +399,28 @@ class TestVectorizeOperatorGrid(TestCase):
         expected = gr.GridData(expected, grid)
         calculated = gr.vectorize_operator_grid(op_grid)
 
-        self.assertEqual(expected, calculated)
+        self.assertAlmostEqual(expected, calculated)
+
+
+class TestInitializeOperatorGrid(TestCase):
+    def test_initialization(self):
+        x = (0., 1.)
+        y = (0., 1.)
+        z = (0., 1.)
+        grid = gr.CartesianGrid((x, y, z))
+        s000 = la.CartesianSpinOperator((0., 0., 0., 0.))
+        s001 = la.CartesianSpinOperator((0., 0., 0., 1.))
+        s010 = la.CartesianSpinOperator((0., 0., 1., 0.))
+        s011 = la.CartesianSpinOperator((0., 0., 1., 1.))
+        s100 = la.CartesianSpinOperator((0., 1., 0., 0.))
+        s101 = la.CartesianSpinOperator((0., 1., 0., 1.))
+        s110 = la.CartesianSpinOperator((0., 1., 1., 0.))
+        s111 = la.CartesianSpinOperator((0., 1., 1., 1.))
+        ops = np.array([[[s000, s001], [s010, s011]],
+                        [[s100, s101], [s110, s111]]])
+        o_grid_ex = gr.GridData(ops, grid)
+        o_grid_ac = gr.initialize_operator_grid(grid, la.CartesianSpinOperator, i_coord=0.)
+        self.assertEqual(o_grid_ac, o_grid_ex)
 
 
 
