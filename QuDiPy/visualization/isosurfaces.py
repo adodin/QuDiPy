@@ -58,10 +58,10 @@ def plot_cartesian_isosurface(function_grids, levels, contours=[], cont_kwargs=[
         x_min, y_min, z_min = 2 * np.min(x), 2 * np.min(y), 2 * np.min(z)
         x_max, y_max, z_max = 2 * np.max(x), 2 * np.max(y), 2 * np.max(z)
         verts, faces = measure.marching_cubes_classic(volume=func, level=level)
-        verts[:, 0] = verts[:, 0] * del_y + y_min
-        verts[:, 1] = verts[:, 1] * del_x + x_min
+        verts[:, 0] = verts[:, 0] * del_x + x_min
+        verts[:, 1] = verts[:, 1] * del_y + y_min
         verts[:, 2] = verts[:, 2] * del_z + z_min
-        tri = ax.plot_trisurf(verts[:, 1], verts[:, 0], faces, verts[:, 2], zorder=100., **tri_kwarg)
+        tri = ax.plot_trisurf(verts[:, 0], verts[:, 1], faces, verts[:, 2], zorder=100., **tri_kwarg)
         for contour in contours:
             lvl = contour * level
             if np.min(yz_func) < lvl < np.max(yz_func):
@@ -119,22 +119,22 @@ def plot_spherical_isosurface(function_grids, levels, tri_kwargs=[{'cmap': 'Spec
 
     for fg, level, tri_kwarg in zip(function_grids, levels, tri_kwargs):
         func = fg.data
-        x, y, z = fg.grid.coordinates
+        r, theta, phi = fg.grid.coordinates
 
         # Calculate and Plot Isosurface
         # Factor of 2 for consistency with bloch sphere convention
-        del_x, del_y, del_z = 2 * (x[1] - x[0]), 2 * (y[1] - y[0]), 2 * (z[1] - z[0])
-        x_min, y_min, z_min = 2 * np.min(x), 2 * np.min(y), 2 * np.min(z)
+        del_r, del_theta, del_phi = 2 * (r[1] - r[0]),  (theta[1] - theta[0]), (phi[1] - phi[0])
+        r_min, theta_min, phi_min = 2 * np.min(r), np.min(theta), np.min(phi)
         verts, faces = measure.marching_cubes_classic(volume=func, level=level)
         v = []
-        v.append(verts[:, 0] * del_x + x_min)
-        v.append(verts[:, 1] * del_y + y_min)
-        v.append(verts[:, 2] * del_z + z_min)
+        v.append(verts[:, 0] * del_r + r_min)
+        v.append(verts[:, 1] * del_theta + theta_min)
+        v.append(verts[:, 2] * del_phi + phi_min)
         v = sp.spherical_to_cartesian(tuple(v))
         verts[:, 0] = v[0]
         verts[:, 1] = v[1]
         verts[:, 2] = v[2]
-        tri = ax.plot_trisurf(verts[:, 1], verts[:, 0], faces, verts[:, 2], zorder=100., **tri_kwarg)
+        tri = ax.plot_trisurf(verts[:, 0], verts[:, 1], faces, verts[:, 2], zorder=100., **tri_kwarg)
 
     # Draw and Save Figure
     if show_plot:
