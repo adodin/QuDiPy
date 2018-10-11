@@ -54,11 +54,10 @@ def plot_flow(flow_grids, quiver_kwargs=[{'linewidth': 2., 'colors': red}],
     # Generate Quiver Plot
     for flow_grid, line_format, proj_format in zip(flow_grids, quiver_kwargs, proj_quiver_kwargs):
         # Grab Coordinates
-        fgg = flow_grid.grid.grid
         xc, yc, zc = tuple(flow_grid.grid.grid)           # Factor of 2 for Consistency with Bloch Sphere Convention
-        x = xc.real
-        y = yc.real
-        z = zc.real
+        x = 2 * xc.real
+        y = 2 * yc.real
+        z = 2 * zc.real
         mid_x = int(np.floor(np.shape(x)[0] / 2))
         mid_y = int(np.floor(np.shape(y)[1] / 2))
         mid_z = int(np.floor(np.shape(z)[2] / 2))
