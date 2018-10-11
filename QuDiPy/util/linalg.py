@@ -126,7 +126,8 @@ class SphericalSpinOperator(SpinOperator):
 
 
 def get_cartesian_vector(operator):
-    return operator.convert_cartesian()
+    vec = operator.convert_cartesian()
+    return vec
 
 
 get_cartesian_vectors = np.vectorize(get_cartesian_vector)

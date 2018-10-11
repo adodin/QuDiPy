@@ -297,6 +297,7 @@ class TestGetCartesianVectors(TestCase):
         self.assertEqual((0, 1, 0, 0), la.get_cartesian_vector(sx))
         self.assertEqual((0, 1, 0, 0), la.get_cartesian_vectors(sx))
 
+
     def test_get_1D_array_cartesian_vectors(self):
         si = la.CartesianSpinOperator((1, 0, 0, 0))
         sx = la.CartesianSpinOperator((0, 1, 0, 0))
@@ -308,7 +309,7 @@ class TestGetCartesianVectors(TestCase):
         for c, e in zip(calc, expected):
             self.assertTrue(np.array_equal(c, e))
 
-    def test_get_1D_array_cartesian_vectors(self):
+    def test_get_2D_array_cartesian_vectors(self):
         s1 = la.CartesianSpinOperator((1., 2., 3., 4.))
         s2 = la.CartesianSpinOperator((1.1, 1.2, 1.3, 1.4))
         s3 = la.CartesianSpinOperator((1.5, 2.5, 3.5, 4.5))
