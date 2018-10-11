@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib as mpl
 from QuDiPy.visualization.formatting import format_3d_axes, red
+import QuDiPy.util.spherical as sp
 import matplotlib.animation as an
 
 
@@ -43,7 +44,7 @@ def plot_cartesian_isosurface(function_grids, levels, contours=[], cont_kwargs=[
         func = fg.data
         x, y, z = fg.grid.coordinates
 
-        # Calculate Projected Functions (Normalized to the same max as orginal Function)
+        # Calculate Projected Functions (Normalized to the same max as original Function)
         yz_func = np.sum(func, axis=0)
         yz_func *= np.max(func)/np.max(yz_func)
         xz_func = np.sum(func, axis=1)
@@ -81,6 +82,59 @@ def plot_cartesian_isosurface(function_grids, levels, contours=[], cont_kwargs=[
                 cont[:, 0] = cont[:, 0] * del_x + x_min
                 cont[:, 1] = cont[:, 1] * del_y + y_min
                 tri = ax.plot(xs=cont[:, 0], ys=cont[:, 1], zs=z_min * np.ones_like(cont[:, 0]), zorder=-1., **cont_kwarg)
+
+    # Draw and Save Figure
+    if show_plot:
+        plt.show()
+    if fname is not None:
+        fig.savefig(fname)
+
+    return fig, tri
+
+
+def plot_spherical_isosurface(function_grids, levels, tri_kwargs=[{'cmap': 'Spectral', 'lw': 1}],
+                    fig_kwargs={'figsize': [12., 15.]}, ax_kwargs={}, font_kwargs={'name': 'serif', 'size': 30},
+                    show_plot=True, fname=None, fig_num=None):
+
+    # Repeat axis and line formats if only one value is given
+    if len(tri_kwargs) == 1:
+        tri_kwargs = tri_kwargs * len(function_grids)
+    if len(levels) == 1:
+        levels = levels * len(function_grids)
+
+    # Checks that all inputs are now the same length
+    assert len(function_grids) == len(tri_kwargs) == len(levels)
+
+    # Set Axis Parameters
+    x_lim = (-1., 1.)
+    y_lim = (-1., 1.)
+    z_lim = (-1., 1.)
+
+    # Format Figure and Axes
+    fig = plt.figure(fig_num, **fig_kwargs)
+    ax = fig.add_axes([0.025, 0.15, 0.8, 0.85], projection='3d')
+
+    # Format Axes
+    format_3d_axes(ax, x_lim=x_lim, y_lim=y_lim, z_lim=z_lim, font_kwargs=font_kwargs, **ax_kwargs)
+
+    for fg, level, tri_kwarg in zip(function_grids, levels, tri_kwargs):
+        func = fg.data
+        x, y, z = fg.grid.coordinates
+
+        # Calculate and Plot Isosurface
+        # Factor of 2 for consistency with bloch sphere convention
+        del_x, del_y, del_z = 2 * (x[1] - x[0]), 2 * (y[1] - y[0]), 2 * (z[1] - z[0])
+        x_min, y_min, z_min = 2 * np.min(x), 2 * np.min(y), 2 * np.min(z)
+        verts, faces = measure.marching_cubes_classic(volume=func, level=level)
+        v = []
+        v.append(verts[:, 0] * del_x + x_min)
+        v.append(verts[:, 1] * del_y + y_min)
+        v.append(verts[:, 2] * del_z + z_min)
+        v = sp.spherical_to_cartesian(tuple(v))
+        verts[:, 0] = v[0]
+        verts[:, 1] = v[1]
+        verts[:, 2] = v[2]
+        tri = ax.plot_trisurf(verts[:, 1], verts[:, 0], faces, verts[:, 2], zorder=100., **tri_kwarg)
 
     # Draw and Save Figure
     if show_plot:

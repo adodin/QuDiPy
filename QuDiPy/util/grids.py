@@ -9,6 +9,12 @@ import QuDiPy.util.linalg as la
 
 
 class Grid:
+    def calculate_grid(self, other=None):
+        if other is None:
+            return self._calculate_grid(self.coordinates)
+        else:
+            return self._calculate_grid(other)
+
     def __eq__(self, other):
         # Float equality of Grids
         return np.array_equal(np.round(self.grid, 7), np.round(other.grid, 7))
@@ -70,8 +76,9 @@ def calculate_cartesian_divergence(vector_funct, coordinates):
 
 
 class CartesianGrid(Grid):
-    def calculate_grid(self):
-        return calculate_cartesian_grid(self.coordinates)
+    @staticmethod
+    def _calculate_grid(coords):
+        return calculate_cartesian_grid(coords)
 
     def calculate_volume(self):
         return calculate_cartesian_volume_element(self.coordinates)
@@ -87,8 +94,9 @@ class CartesianGrid(Grid):
 
 
 class SphericalGrid(Grid):
-    def calculate_grid(self):
-        return sp.spherical_to_cartesian_grid(self.coordinates)
+    @staticmethod
+    def _calculate_grid(coords):
+        return sp.spherical_to_cartesian_grid(coords)
 
     def gradient(self, funct):
         return sp.calculate_spherical_gradient(funct, self.coordinates, self.grid)
