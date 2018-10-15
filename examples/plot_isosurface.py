@@ -4,10 +4,9 @@ Written by: Amro Dodin (Willard Group - MIT)
 """
 
 import numpy as np
-import QuDiPy.util.grids as gr
+import QuDiPy.containers.grids as gr
 import QuDiPy.visualization.isosurfaces as iso
-from QuDiPy.visualization.formatting import red, green
-
+from QuDiPy.visualization.formatting import red
 
 # Make Cartesian Grid
 res_x = 50

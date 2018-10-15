@@ -4,8 +4,8 @@ Written by: Amro Dodin (Willard Group - MIT)
 """
 
 import numpy as np
-from QuDiPy.util.spherical import spherical_to_cartesian
-import QuDiPy.util.spherical as sp
+from QuDiPy.coordinates.spherical import spherical_to_cartesian
+import QuDiPy.coordinates.spherical as sp
 
 
 def calculate_spin_matrix(cartesian_vector):

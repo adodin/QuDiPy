@@ -1,6 +1,5 @@
 from unittest import TestCase
-import unittest
-import QuDiPy.util.timeseries as ts
+import QuDiPy.containers.timeseries as ts
 import numpy as np
 
 

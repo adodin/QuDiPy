@@ -4,7 +4,7 @@ Written by: Amro Dodin (Willard Group - MIT)
 """
 
 import numpy as np
-import QuDiPy.util.timeseries as ts
+import QuDiPy.containers.timeseries as ts
 
 # Default Butcher tableau using the RK4 method
 rk4_a = [[0., 0., 0., 0.],
@@ -28,7 +28,7 @@ def rk_step(y0, t0, dt, deriv, a=rk4_a, b=rk4_b, c=rk4_c, deriv_kwargs={}):
             yi += dt * ai[i] * ki
         k.append(deriv(yi, ti, **deriv_kwargs))
     for bi, ki in zip(b, k):
-        y0 += bi * ki * dt
+        y0 += bi * dt * ki
     t0 += dt
     return y0, t0
 
@@ -39,7 +39,7 @@ def rk_integrate(y0, t0, dt, tf, deriv, interv=lambda x, t: (x, t), rk_kwargs={}
     t = t0
     y = y0
     while t < tf:
-        y, t = rk_step(y, t, dt, deriv, **rk_kwargs, **deriv_kwargs)
+        y, t = rk_step(y, t, dt, deriv, deriv_kwargs=deriv_kwargs, **rk_kwargs)
         y, t = interv(y, t, **interv_kwargs)
         trajectory.append(y, t)
 

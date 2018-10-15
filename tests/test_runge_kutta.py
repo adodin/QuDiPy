@@ -1,7 +1,7 @@
 import unittest
 from unittest import TestCase
-import QuDiPy.util.timeseries as ts
-import QuDiPy.util.runge_kutta as rk
+import QuDiPy.containers.timeseries as ts
+import QuDiPy.math.runge_kutta as rk
 import numpy as np
 
 

@@ -1,6 +1,6 @@
 from unittest import TestCase
 import unittest
-import QuDiPy.util.linalg as la
+import QuDiPy.math.linear_algebra as la
 import numpy.random as rn
 import numpy as np
 

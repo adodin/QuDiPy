@@ -3,7 +3,7 @@ Written by: Amro Dodin (Willard Group - MIT)
 
 """
 
-import QuDiPy.util.linalg as la
+import QuDiPy.math.linear_algebra as la
 from QuDiPy.util.constants import hbar
 import numpy as np
 

@@ -1,9 +1,9 @@
 import unittest
 from unittest import TestCase
-import QuDiPy.util.linalg as la
+import QuDiPy.math.linear_algebra as la
 from QuDiPy.dynamics.unitary_dynamics import unitary_derivative, array_unitary_derivative, grid_unitary_derivative
 from QuDiPy.dynamics.bloch_dynamics import bloch_derivative, array_bloch_derivative, grid_bloch_derivative
-import QuDiPy.util.grids as gr
+import QuDiPy.containers.grids as gr
 import numpy as np
 
 

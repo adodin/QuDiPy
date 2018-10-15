@@ -1,11 +1,11 @@
 from unittest import TestCase
 import unittest
-import QuDiPy.util.spherical as sp
+import QuDiPy.coordinates.spherical as sp
 import numpy as np
-from numpy import pi, sin, cos
+from numpy import pi, sin
 
 
-class TestSpherical_to_cartesian(TestCase):
+class TestSphericalToCartesian(TestCase):
     def test_spherical_to_cartesian_one_3D_point(self):
         x_spherical = (1., pi/2, 0.)
         minus_x_spherical = (1., pi/2, pi)
@@ -92,7 +92,7 @@ class TestSpherical_to_cartesian(TestCase):
         self.assertTrue(np.array_equal(np.round(z_conv, 7), z_grid))
 
 
-class TestCartesian_to_spherical(TestCase):
+class TestCartesianToSpherical(TestCase):
     def test_cartesian_to_spherical_one_3D_point(self):
         x_cart = (1., 0., 0.)
         x_m_cart = (-1., 0., 0.)
@@ -138,12 +138,12 @@ class TestCartesian_to_spherical(TestCase):
         self.assertTrue(np.array_equal(np.round(x_iy_conv, 7), np.round(x_iy_spherical, 7)))
 
 
-class TestSpherical_to_cartesian_grid(TestCase):
+class TestSphericalToCartesianMesh(TestCase):
     def test_spherical_to_cartesian_grid(self):
         r_array = (1., 0.5, 0.0)
         theta_array = (0.0, pi / 2)
         phi_array = (0.0, pi / 2)
-        x_conv, y_conv, z_conv = sp.spherical_to_cartesian_grid((r_array, theta_array, phi_array))
+        x_conv, y_conv, z_conv = sp.spherical_to_cartesian_mesh((r_array, theta_array, phi_array))
         x_grid = np.array([[[0., 0.], [1., 0.]], [[0., 0.], [0.5, 0.]], [[0., 0.], [0., 0.]]])
         y_grid = np.array([[[0., 0.], [0., 1.]], [[0., 0.], [0., 0.5]], [[0., 0.], [0., 0.]]])
         z_grid = np.array([[[1., 1.], [0., 0.]], [[0.5, 0.5], [0., 0.]], [[0., 0.], [0., 0.]]])
@@ -152,7 +152,7 @@ class TestSpherical_to_cartesian_grid(TestCase):
         self.assertTrue(np.array_equal(np.round(z_conv, 7), z_grid))
 
 
-class TestCalculate_spherical_volume_element(TestCase):
+class TestCalculateSphericalVolumeElement(TestCase):
     def test_one_spherical_volume_element(self):
         r = 1.
         r0 = 0.
@@ -173,7 +173,7 @@ class TestCalculate_spherical_volume_element(TestCase):
         self.assertTrue(np.array_equal(np.round(calc_volume, 7), volume))
 
 
-class TestCalculate_spherical_gradient(TestCase):
+class TestCalculateSphericalGradient(TestCase):
     def test_gradient_radial(self):
         r_array = np.linspace(1E-4, 1., 20)
         theta_array = np.linspace(1E-4, pi-1E-4, 10)
@@ -199,7 +199,7 @@ class TestCalculate_spherical_gradient(TestCase):
             self.assertTrue(np.array_equal(np.round(calculated, 7), np.round(correct, 7)))
 
 
-class TestCalculate_spherical_divergence(TestCase):
+class TestCalculateSphericalDivergence(TestCase):
     def test_divergence_radial(self):
         r_array = np.linspace(1E-2, 1., 10000)
         theta_array = np.linspace(1E-2, pi-1E-2, 10)
@@ -210,7 +210,7 @@ class TestCalculate_spherical_divergence(TestCase):
         calculated_divergence = sp.calculate_spherical_divergence(vector_funct, (r_array, theta_array, phi_array),
                                                                   (r_grid, t_grid, p_grid))
         self.assertTrue(np.array_equal(np.round(calculated_divergence, 3), correct_divergence))
-        # Allow for numerical error
+        # Allow for numerical error of 0.1 %
 
 
 if __name__ == '__main__':

@@ -4,8 +4,10 @@ Written by: Amro Dodin (Willard Group - MIT)
 """
 
 import numpy as np
-import QuDiPy.util.spherical as sp
-import QuDiPy.util.linalg as la
+import QuDiPy.coordinates.spherical as sp
+import QuDiPy.math.linear_algebra as la
+from QuDiPy.coordinates.cartesian import calculate_cartesian_mesh, calculate_differentials, \
+    calculate_cartesian_volume_element, calculate_cartesian_gradient, calculate_cartesian_divergence
 
 
 class Grid:
@@ -37,54 +39,16 @@ class Grid:
         return np.shape(self.grid[0])
 
 
-def calculate_cartesian_grid(coordinates):
-    return np.meshgrid(*coordinates, indexing='ij')
-
-
-def calculate_differentials(coordinates):
-    differentials = []
-    for coord in coordinates:
-        diff = []
-        diff.append(0.5 * abs(coord[1] - coord[0]))
-        for ii in range(1, len(coord)-1):
-            left = 0.5 * (coord[ii - 1] + coord[ii])
-            right = 0.5 * (coord[ii] + coord[ii + 1])
-            diff.append(abs(right - left))
-        diff.append(0.5 * abs(coord[-1] - coord[-2]))
-        differentials.append(diff)
-    return tuple(differentials)
-
-
-def calculate_cartesian_volume_element(coordinates):
-    differentials = calculate_differentials(coordinates)
-    diff_grid = np.meshgrid(*differentials, indexing='ij')
-    return np.product(diff_grid, axis=0)
-
-
-def calculate_cartesian_gradient(funct, coordinates):
-    return np.gradient(funct, *coordinates, edge_order=2)
-
-
-def calculate_cartesian_divergence(vector_funct, coordinates):
-    assert len(vector_funct) == len(coordinates)
-    divergence = np.zeros_like(vector_funct[0])
-    for i in range(len(coordinates)):
-        fi = vector_funct[i]
-        ci = coordinates[i]
-        divergence += np.gradient(fi, ci, axis=i, edge_order=2)
-    return divergence
-
-
 class CartesianGrid(Grid):
     @staticmethod
     def _calculate_grid(coords):
-        return calculate_cartesian_grid(coords)
+        return calculate_cartesian_mesh(coords)
 
     def calculate_volume(self):
         return calculate_cartesian_volume_element(self.coordinates)
 
     def gradient(self, funct):
-        return calculate_cartesian_gradient(funct, self.coordinates)
+        return tuple(calculate_cartesian_gradient(funct, self.coordinates))
 
     def divergence(self, vector_funct):
         return calculate_cartesian_divergence(vector_funct, self.coordinates)
@@ -96,13 +60,13 @@ class CartesianGrid(Grid):
 class SphericalGrid(Grid):
     @staticmethod
     def _calculate_grid(coords):
-        return sp.spherical_to_cartesian_grid(coords)
+        return sp.spherical_to_cartesian_mesh(coords)
 
     def gradient(self, funct):
-        return sp.calculate_spherical_gradient(funct, self.coordinates, self.grid)
+        return tuple(sp.calculate_spherical_gradient(funct, self.coordinates, self.grid))
 
     def divergence(self, vector_funct):
-        return sp.calculate_spherical_divergence(vector_funct, self.coordinates, self.grif)
+        return sp.calculate_spherical_divergence(vector_funct, self.coordinates, self.grid)
 
     def calculate_volume(self):
         differentials = calculate_differentials(self.coordinates)
@@ -217,6 +181,16 @@ class GridData:
 def vectorize_operator_grid(operator_grid):
     vec_data = la.get_cartesian_vectors(operator_grid.data)
     return operator_grid.like(vec_data)
+
+
+def unvectorize_operator_grid(vector_grid, operator_type, i_coord=None):
+    ops = []
+    for vec, coords in vector_grid:
+        if i_coord is not None:
+            vec = (i_coord, *vec)
+        ops.append(operator_type(vec))
+    ops = np.reshape(ops, vector_grid.grid.shape)
+    return vector_grid.like(ops)
 
 
 def initialize_operator_grid(grid, operator_type, i_coord=None):

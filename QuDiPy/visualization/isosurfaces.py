@@ -6,10 +6,8 @@ import numpy as np
 from skimage import measure
 import matplotlib; matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib as mpl
-from QuDiPy.visualization.formatting import format_3d_axes, red
-import QuDiPy.util.spherical as sp
+from QuDiPy.visualization.formatting import format_3d_axes
+import QuDiPy.coordinates.spherical as sp
 import matplotlib.animation as an
 
 
@@ -91,7 +89,8 @@ def animate_cartesian_isosurface(function_grid_series, levels, contours=[], cont
                        tri_kwargs=[{'cmap': 'Spectral', 'lw': 1}],
                        writer_kwargs={'fps': 30}, ani_kwargs={'blit': False, 'repeat': False, 'interval':33},
                        fig_kwargs={'figsize': [12., 15.]}, ax_kwargs={},
-                       font_kwargs={'name': 'serif', 'size': 30}, show_plot=True, fname=None, fig_num=None):
+                       font_kwargs={'name': 'serif', 'size': 30}, normalize_level=False,
+                       show_plot=True, fname=None, fig_num=None):
 
     # Repeat axis and line formats if only one value is given
     if len(tri_kwargs) == 1:
@@ -140,6 +139,8 @@ def animate_cartesian_isosurface(function_grid_series, levels, contours=[], cont
                 lvl = level[0]
             else:
                 lvl = level[ff]
+            if normalize_level:
+                lvl = lvl * np.max(func)
             verts, faces = measure.marching_cubes_classic(volume=func, level=lvl)
             verts[:, 0] = verts[:, 0] * del_x + x_min
             verts[:, 1] = verts[:, 1] * del_y + y_min
@@ -232,10 +233,11 @@ def plot_spherical_isosurface(function_grids, levels, tri_kwargs=[{'cmap': 'Spec
 
 
 def animate_spherical_isosurface(function_grid_series, levels, contours=[], cont_kwargs=[{}],
-                       tri_kwargs=[{'cmap': 'Spectral', 'lw': 1}],
-                       writer_kwargs={'fps': 30}, ani_kwargs={'blit': False, 'repeat': False, 'interval':33},
-                       fig_kwargs={'figsize': [12., 15.]}, ax_kwargs={},
-                       font_kwargs={'name': 'serif', 'size': 30}, show_plot=True, fname=None, fig_num=None):
+                                 tri_kwargs=[{'cmap': 'Spectral', 'lw': 1}],
+                                 writer_kwargs={'fps': 30}, ani_kwargs={'blit': False, 'repeat': False, 'interval':33},
+                                 fig_kwargs={'figsize': [12., 15.]}, ax_kwargs={},
+                                 font_kwargs={'name': 'serif', 'size': 30}, normalize_level=False,
+                                 show_plot=True, fname=None, fig_num=None):
 
     # Repeat axis and line formats if only one value is given
     if len(tri_kwargs) == 1:
@@ -275,6 +277,8 @@ def animate_spherical_isosurface(function_grid_series, levels, contours=[], cont
                 lvl = level[0]
             else:
                 lvl = level[ff]
+            if normalize_level:
+                lvl = lvl * np.max(func)
             verts, faces = measure.marching_cubes_classic(volume=func, level=lvl)
             v = []
             v.append(verts[:, 0] * del_r + r_min)

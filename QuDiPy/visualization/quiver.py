@@ -7,9 +7,8 @@ Written by: Amro Dodin (Willard Group - MIT)
 import numpy as np
 import matplotlib as mpl; mpl.use('TkAgg')
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from QuDiPy.visualization.formatting import format_3d_axes, red
-import QuDiPy.util.linalg as la
+import QuDiPy.math.linear_algebra as la
 
 
 def plot_flow(flow_grids, quiver_kwargs=[{'linewidth': 2., 'colors': red}],

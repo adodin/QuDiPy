@@ -4,10 +4,10 @@ Written by: Amro Dodin (Willard Group - MIT)
 """
 
 import numpy as np
-import QuDiPy.util.grids as gr
+import QuDiPy.containers.grids as gr
 import QuDiPy.visualization.isosurfaces as iso
-from QuDiPy.visualization.formatting import red, green
-import QuDiPy.util.timeseries as ts
+from QuDiPy.visualization.formatting import red
+import QuDiPy.containers.timeseries as ts
 
 
 # Make Cartesian Grid
@@ -52,5 +52,8 @@ for t in range(50):
 spherical_series = ts.TimeSeries(grid_list, time_list)
 
 fig1, ani1 = iso.animate_cartesian_isosurface([cartesian_series], [[0.9]], [1.5, 1.0],
+                                              cont_kwargs=[{'color': red, 'alpha': 0.5}])
+
+fig2, ani2 = iso.animate_spherical_isosurface([spherical_series], [[0.9]], [1.5, 1.0],
                                               cont_kwargs=[{'color': red, 'alpha': 0.5}])
 

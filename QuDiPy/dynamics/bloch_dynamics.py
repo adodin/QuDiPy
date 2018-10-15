@@ -5,7 +5,7 @@ This is a generalization of the Bloch type equations including both the NMR and 
 """
 
 from QuDiPy.dynamics.unitary_dynamics import unitary_derivative
-import QuDiPy.util.linalg as la
+import QuDiPy.math.linear_algebra as la
 import numpy as np
 
 

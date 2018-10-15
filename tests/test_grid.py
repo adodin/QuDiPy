@@ -1,13 +1,15 @@
 import unittest
 from unittest import TestCase
-import QuDiPy.util.grids as gr
-import QuDiPy.util.spherical as sp
+import QuDiPy.containers.grids as gr
+import QuDiPy.coordinates.cartesian
+import QuDiPy.coordinates.spherical as sp
 import numpy as np
 from numpy import pi
-import QuDiPy.util.linalg as la
+import QuDiPy.math.linear_algebra as la
 
 
-class TestCalculate_differentials(TestCase):
+# Test Cartesian Calculus Functions (Spherical in Test Spherical)
+class TestCalculateDifferentials(TestCase):
     def test_calculate_uniformly_spaced_differentials(self):
         x = np.linspace(-1., 1., 11)
         y = np.linspace(-1., 1., 21)
@@ -22,7 +24,7 @@ class TestCalculate_differentials(TestCase):
         dz[0] = 0.05
         dz[-1] = 0.05
         correct_differentials = (dx, dy, dz)
-        calculated_diffs = gr.calculate_differentials((x, y, z))
+        calculated_diffs = QuDiPy.coordinates.cartesian.calculate_differentials((x, y, z))
         for correct, calc in zip(correct_differentials, calculated_diffs):
             rounded_calc = np.round(calc, 7)
             self.assertTrue(np.array_equal(rounded_calc, correct))
@@ -31,13 +33,13 @@ class TestCalculate_differentials(TestCase):
         x = (0., 0.1, 0.3, 0.9)
         dx = (0.05, 0.15, 0.4, 0.3)
         correct_differentials = (dx,)
-        calculated_diffs = gr.calculate_differentials((x,))
+        calculated_diffs = QuDiPy.coordinates.cartesian.calculate_differentials((x,))
         for correct, calc in zip(correct_differentials, calculated_diffs):
             rounded_calc = np.round(calc, 7)
             self.assertTrue(np.array_equal(rounded_calc, correct))
 
 
-class TestCalculate_cartesian_volume_element(TestCase):
+class TestCalculateCartesianVolumeElement(TestCase):
     def test_calculate_cartesian_volume_element_uniform(self):
         x = np.linspace(-1., 1., 11)
         y = np.linspace(-1., 1., 21)
@@ -53,11 +55,11 @@ class TestCalculate_cartesian_volume_element(TestCase):
         dz[-1] = 0.05
         dx_grid, dy_grid, dz_grid = np.meshgrid(dx, dy, dz, indexing='ij')
         correct_volume = dx_grid * dy_grid * dz_grid
-        calculated_volume = gr.calculate_cartesian_volume_element((x, y, z))
+        calculated_volume = QuDiPy.coordinates.cartesian.calculate_cartesian_volume_element((x, y, z))
         self.assertTrue(np.array_equal(np.round(calculated_volume, 7), np.round(correct_volume, 7)))
 
 
-class TestCalculate_cartesian_gradient(TestCase):
+class TestCalculateCartesianGradient(TestCase):
     def test_calculate_cartesian_gradient_linear(self):
         x = np.linspace(-1., 1., 11)
         y = np.linspace(-1., 1., 21)
@@ -65,7 +67,7 @@ class TestCalculate_cartesian_gradient(TestCase):
         x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
         funct = z_grid
         correct_gradient = (np.zeros_like(x_grid), np.zeros_like(y_grid), np.ones_like(z_grid))
-        calculated_gradient = gr.calculate_cartesian_gradient(funct, (x, y, z))
+        calculated_gradient = QuDiPy.coordinates.cartesian.calculate_cartesian_gradient(funct, (x, y, z))
         for correct, calculated in zip(correct_gradient, calculated_gradient):
             self.assertTrue(np.array_equal(np.round(calculated, 7), correct))
 
@@ -76,7 +78,7 @@ class TestCalculate_cartesian_gradient(TestCase):
         x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
         funct = x_grid * y_grid
         correct_gradient = (y_grid, x_grid, np.zeros_like(z_grid))
-        calculated_gradient = gr.calculate_cartesian_gradient(funct, (x, y, z))
+        calculated_gradient = QuDiPy.coordinates.cartesian.calculate_cartesian_gradient(funct, (x, y, z))
         for correct, calculated in zip(correct_gradient, calculated_gradient):
             self.assertTrue(np.array_equal(np.round(calculated, 7), np.round(correct, 7)))
 
@@ -87,13 +89,12 @@ class TestCalculate_cartesian_gradient(TestCase):
         x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
         funct = z_grid ** 2
         correct_gradient = (np.zeros_like(x_grid), np.zeros_like(y_grid), 2 * z_grid)
-        calculated_gradient = gr.calculate_cartesian_gradient(funct, (x, y, z))
+        calculated_gradient = QuDiPy.coordinates.cartesian.calculate_cartesian_gradient(funct, (x, y, z))
         for correct, calculated in zip(correct_gradient, calculated_gradient):
             self.assertTrue(np.array_equal(np.round(calculated, 7), np.round(correct, 7)))
 
 
-
-class TestCalculate_cartesian_divergence(TestCase):
+class TestCalculateCartesianDivergence(TestCase):
     def test_calculate_cartesian_divergence_whirlpool(self):
         x = np.linspace(-1., 1., 11)
         y = np.linspace(-1., 1., 21)
@@ -101,8 +102,7 @@ class TestCalculate_cartesian_divergence(TestCase):
         x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
         funct = (y_grid, x_grid, np.zeros_like(z_grid))
         correct_divergence = np.zeros_like(x_grid)
-        calculated_divergence = gr.calculate_cartesian_divergence(funct, (x, y, z))
-        test = np.round(calculated_divergence, 7) == correct_divergence
+        calculated_divergence = QuDiPy.coordinates.cartesian.calculate_cartesian_divergence(funct, (x, y, z))
         self.assertTrue(np.array_equal(np.round(calculated_divergence, 7), correct_divergence))
 
     def test_calculate_cartesian_divergence_radial(self):
@@ -110,13 +110,94 @@ class TestCalculate_cartesian_divergence(TestCase):
         y = np.linspace(-1., 1., 21)
         z = np.linspace(0., 1., 11)
         x_grid, y_grid, z_grid = np.meshgrid(x, y, z, indexing='ij')
-        funct = gr.calculate_cartesian_gradient(.5*(x_grid ** 2 + y_grid ** 2 + z_grid**2), (x, y, z))
+        funct = QuDiPy.coordinates.cartesian.calculate_cartesian_gradient(.5 * (x_grid ** 2 + y_grid ** 2 + z_grid ** 2), (x, y, z))
         correct_divergence = 3*np.ones_like(x_grid)
-        calculated_divergence = gr.calculate_cartesian_divergence(funct, (x, y, z))
-        test = np.round(calculated_divergence, 7) == correct_divergence
+        calculated_divergence = QuDiPy.coordinates.cartesian.calculate_cartesian_divergence(funct, (x, y, z))
         self.assertTrue(np.array_equal(np.round(calculated_divergence, 7), correct_divergence))
 
 
+class TestVectorizeOperatorGrid(TestCase):
+    def test_vectorize_cartesian(self):
+        si = la.CartesianSpinOperator((1, 0, 0, 0))
+        sx = la.CartesianSpinOperator((0, 1, 0, 0))
+        sy = la.CartesianSpinOperator((0, 0, 1, 0))
+        sz = la.CartesianSpinOperator((0, 0, 0, 1))
+        ops = np.array([[si, sx], [sy, sz]])
+        expected = (np.array([[1, 0], [0, 0]]), np.array([[0, 1], [0, 0]]),
+                    np.array([[0, 0], [1, 0]]), np.array([[0, 0], [0, 1]]))
+
+        x1 = (0, 1)
+        x2 = (0, 1)
+        grid = gr.CartesianGrid((x1, x2))
+
+        op_grid = gr.GridData(ops, grid)
+        expected = gr.GridData(expected, grid)
+        calculated = gr.vectorize_operator_grid(op_grid)
+
+        self.assertEqual(expected, calculated)
+
+    def test_vectorize_spherical(self):
+        si = la.SphericalSpinOperator((1, 0, 0, 0))
+        sx = la.SphericalSpinOperator((0, 1, pi/2, 0))
+        sy = la.SphericalSpinOperator((0, 1, pi/2, pi/2))
+        sz = la.SphericalSpinOperator((0, 1, 0, 0))
+        ops = np.array([[si, sx], [sy, sz]])
+        expected = (np.array([[1, 0], [0, 0]]), np.array([[0, 1], [0, 0]]),
+                    np.array([[0, 0], [1, 0]]), np.array([[0, 0], [0, 1]]))
+
+        x1 = (0, 1)
+        x2 = (0, 1)
+        grid = gr.CartesianGrid((x1, x2))
+
+        op_grid = gr.GridData(ops, grid)
+        expected = gr.GridData(expected, grid)
+        calculated = gr.vectorize_operator_grid(op_grid)
+
+        self.assertAlmostEqual(expected, calculated)
+
+
+class TestUnvectorizeOperatorGrid(TestCase):
+    def test_unvectorize_cartesian(self):
+        si = la.CartesianSpinOperator((1, 0, 0, 0))
+        sx = la.CartesianSpinOperator((0, 1, 0, 0))
+        sy = la.CartesianSpinOperator((0, 0, 1, 0))
+        sz = la.CartesianSpinOperator((0, 0, 0, 1))
+        ops = np.array([[si, sx], [sy, sz]])
+
+        x1 = (0, 1)
+        x2 = (0, 1)
+        grid = gr.CartesianGrid((x1, x2))
+
+        op_grid = gr.GridData(ops, grid)
+        expected = op_grid
+        calculated = gr.vectorize_operator_grid(op_grid)
+        calculated = gr.unvectorize_operator_grid(calculated, la.CartesianSpinOperator)
+
+        self.assertEqual(expected, calculated)
+
+
+class TestInitializeOperatorGrid(TestCase):
+    def test_initialization(self):
+        x = (0., 1.)
+        y = (0., 1.)
+        z = (0., 1.)
+        grid = gr.CartesianGrid((x, y, z))
+        s000 = la.CartesianSpinOperator((0., 0., 0., 0.))
+        s001 = la.CartesianSpinOperator((0., 0., 0., 1.))
+        s010 = la.CartesianSpinOperator((0., 0., 1., 0.))
+        s011 = la.CartesianSpinOperator((0., 0., 1., 1.))
+        s100 = la.CartesianSpinOperator((0., 1., 0., 0.))
+        s101 = la.CartesianSpinOperator((0., 1., 0., 1.))
+        s110 = la.CartesianSpinOperator((0., 1., 1., 0.))
+        s111 = la.CartesianSpinOperator((0., 1., 1., 1.))
+        ops = np.array([[[s000, s001], [s010, s011]],
+                        [[s100, s101], [s110, s111]]])
+        o_grid_ex = gr.GridData(ops, grid)
+        o_grid_ac = gr.initialize_operator_grid(grid, la.CartesianSpinOperator, i_coord=0.)
+        self.assertEqual(o_grid_ac, o_grid_ex)
+
+
+# Test Grid Objects
 class TestGrid(TestCase):
     def test_grid_equality_override(self):
         x = (0., 1., 2.)
@@ -165,7 +246,6 @@ class TestGrid(TestCase):
 
 
 class TestGridData(TestCase):
-
     def test_grid_data_getitem_overload_1D_data(self):
         x1 = (1., 2.)
         x2 = (100, 200)
@@ -349,7 +429,7 @@ class TestSphericalGrid(TestCase):
         r_array = (1., 0.5, 0.0)
         theta_array = (0.0, pi / 2)
         phi_array = (0.0, pi / 2)
-        correct_grid = sp.spherical_to_cartesian_grid((r_array, theta_array, phi_array))
+        correct_grid = sp.spherical_to_cartesian_mesh((r_array, theta_array, phi_array))
         r = correct_grid[0]
         theta = correct_grid[1]
         diffs = (np.ones_like(r), np.ones_like(r), np.ones_like(r))
@@ -360,67 +440,6 @@ class TestSphericalGrid(TestCase):
         for correct, calculated in zip(correct_grid, calculated_grid):
             self.assertTrue(np.array_equal(correct, calculated))
         self.assertTrue(np.array_equal(np.round(calculated_volume, 7), np.round(correct_volume, 7)))
-
-
-class TestVectorizeOperatorGrid(TestCase):
-    def test_vectorize_cartesian(self):
-        si = la.CartesianSpinOperator((1, 0, 0, 0))
-        sx = la.CartesianSpinOperator((0, 1, 0, 0))
-        sy = la.CartesianSpinOperator((0, 0, 1, 0))
-        sz = la.CartesianSpinOperator((0, 0, 0, 1))
-        ops = np.array([[si, sx], [sy, sz]])
-        expected = (np.array([[1, 0], [0, 0]]), np.array([[0, 1], [0, 0]]),
-                    np.array([[0, 0], [1, 0]]), np.array([[0, 0], [0, 1]]))
-
-        x1 = (0, 1)
-        x2 = (0, 1)
-        grid = gr.CartesianGrid((x1, x2))
-
-        op_grid = gr.GridData(ops, grid)
-        expected = gr.GridData(expected, grid)
-        calculated = gr.vectorize_operator_grid(op_grid)
-
-        self.assertEqual(expected, calculated)
-
-    def test_vectorize_spherical(self):
-        si = la.SphericalSpinOperator((1, 0, 0, 0))
-        sx = la.SphericalSpinOperator((0, 1, pi/2, 0))
-        sy = la.SphericalSpinOperator((0, 1, pi/2, pi/2))
-        sz = la.SphericalSpinOperator((0, 1, 0, 0))
-        ops = np.array([[si, sx], [sy, sz]])
-        expected = (np.array([[1, 0], [0, 0]]), np.array([[0, 1], [0, 0]]),
-                    np.array([[0, 0], [1, 0]]), np.array([[0, 0], [0, 1]]))
-
-        x1 = (0, 1)
-        x2 = (0, 1)
-        grid = gr.CartesianGrid((x1, x2))
-
-        op_grid = gr.GridData(ops, grid)
-        expected = gr.GridData(expected, grid)
-        calculated = gr.vectorize_operator_grid(op_grid)
-
-        self.assertAlmostEqual(expected, calculated)
-
-
-class TestInitializeOperatorGrid(TestCase):
-    def test_initialization(self):
-        x = (0., 1.)
-        y = (0., 1.)
-        z = (0., 1.)
-        grid = gr.CartesianGrid((x, y, z))
-        s000 = la.CartesianSpinOperator((0., 0., 0., 0.))
-        s001 = la.CartesianSpinOperator((0., 0., 0., 1.))
-        s010 = la.CartesianSpinOperator((0., 0., 1., 0.))
-        s011 = la.CartesianSpinOperator((0., 0., 1., 1.))
-        s100 = la.CartesianSpinOperator((0., 1., 0., 0.))
-        s101 = la.CartesianSpinOperator((0., 1., 0., 1.))
-        s110 = la.CartesianSpinOperator((0., 1., 1., 0.))
-        s111 = la.CartesianSpinOperator((0., 1., 1., 1.))
-        ops = np.array([[[s000, s001], [s010, s011]],
-                        [[s100, s101], [s110, s111]]])
-        o_grid_ex = gr.GridData(ops, grid)
-        o_grid_ac = gr.initialize_operator_grid(grid, la.CartesianSpinOperator, i_coord=0.)
-        self.assertEqual(o_grid_ac, o_grid_ex)
 
 
 

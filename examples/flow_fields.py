@@ -4,11 +4,11 @@ Written by: Amro Dodin (Willard Group - MIT)
 """
 
 import numpy as np
-import QuDiPy.util.linalg as la
-import QuDiPy.util.grids as gr
+import QuDiPy.math.linear_algebra as la
+import QuDiPy.containers.grids as gr
 from QuDiPy.dynamics.unitary_dynamics import grid_unitary_derivative
 from QuDiPy.dynamics.bloch_dynamics import grid_bloch_derivative
-import QuDiPy.visualization.bloch_quiver as bq
+import QuDiPy.visualization.quiver as bq
 from QuDiPy.visualization.formatting import red, green
 from QuDiPy.util.constants import hbar
 
