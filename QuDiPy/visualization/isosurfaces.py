@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from QuDiPy.visualization.formatting import format_3d_axes
 import QuDiPy.coordinates.spherical as sp
 import matplotlib.animation as an
+from mpl_toolkits.mplot3d import axes3d
 
 
 def plot_cartesian_isosurface(function_grids, levels, contours=[], cont_kwargs=[{}], tri_kwargs=[{'cmap': 'Spectral', 'lw': 1}],

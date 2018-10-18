@@ -59,7 +59,7 @@ class TestGridBlochDerivative(TestCase):
         rhoy = la.CartesianSpinOperator((0.5, 0., 0.5, 0.))
         rhoz = la.CartesianSpinOperator((0.5, 0., 0., 0.5))
         rhos = np.array([[rhoi, rhox], [rhoy, rhoz]])
-        rho_grid = gr.GridData(rhos, grid)
+        rho_grid = gr.DataGrid(rhos, grid)
         uds = grid_unitary_derivative(rho_grid, ham)
         nuds = rho_grid.like(np.array([[la.CartesianSpinOperator((0., 0., 0., 0.)),
                                         la.CartesianSpinOperator((0., -0.5, 0., 0.))],

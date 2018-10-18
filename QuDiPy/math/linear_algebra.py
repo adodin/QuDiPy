@@ -42,12 +42,15 @@ class Operator:
         return np.array_equal(self.matrix, other.matrix)
 
     def __mul__(self, other):
-        return self.dot(other)
+        if issubclass(type(other), Operator):
+            return self.dot(other)
+        else:
+            prod_mat = other * self.matrix
+            prod_vec = self.matrix_to_vector(prod_mat)
+            return self.__class__(prod_vec)
 
     def __rmul__(self, other):
-        prod_mat = other * self.matrix
-        prod_vec = self.matrix_to_vector(prod_mat)
-        return self.__class__(prod_vec)
+        return self.__mul__(other)
 
     def __add__(self, other):
         sum_mat = self.matrix + other.matrix
@@ -76,6 +79,8 @@ class Operator:
         return type(self)(type(self.vector)(rounded_vec))
 
     def __init__(self, vector):
+        self._container_type = type(vector)
+        self._dim = len(vector)
         self.vector = vector
         self.matrix = self.calculate_matrix()
 
@@ -93,7 +98,9 @@ class SpinOperator(Operator):
         return calculate_spin_matrix(cart)
 
     def __init__(self, vector):
-        assert len(vector) == 4
+        assert len(vector) == 4 or len(vector) == 3
+        if len(vector) == 3:
+            vector = type(vector)(type(vector)((0, )) + vector)
         super().__init__(vector)
 
 
@@ -106,7 +113,6 @@ class CartesianSpinOperator(SpinOperator):
         return calculate_cartesian_spin_vector_from_matrix(matrix)
 
     def __init__(self, vector):
-        assert len(vector) == 4
         super().__init__(vector)
 
 
@@ -120,14 +126,25 @@ class SphericalSpinOperator(SpinOperator):
         return sp.cartesian_to_spherical(cart_vec)
 
     def __init__(self, vector):
-        assert len(vector) == 4
         # Call SpinObservable Constructor with Spherical Conversion
         super().__init__(vector)
 
 
-def get_cartesian_vector(operator):
+def get_cartesian_vector(operator, show_identity=False):
+    container_type = operator._container_type
     vec = operator.convert_cartesian()
+    if not show_identity:
+        vec = container_type(vec[1:])
     return vec
 
 
-get_cartesian_vectors = np.vectorize(get_cartesian_vector)
+def get_vector(operator, show_identity=False):
+    container_type = operator._container_type
+    vec = operator.vector
+    if not show_identity:
+        vec = container_type(vec[1:])
+    return vec
+
+
+get_cartesian_vectors = np.vectorize(get_cartesian_vector, excluded={'show_identity'})
+get_vectors = np.vectorize(get_vector, excluded={'show_identity'})

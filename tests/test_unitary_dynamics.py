@@ -103,7 +103,7 @@ class TestGridUnitaryDerivative(TestCase):
         rhoy = la.CartesianSpinOperator((0.5, 0., 0.5, 0.))
         rhoz = la.CartesianSpinOperator((0.5, 0., 0., 0.5))
         rhos = np.array([[rhoi, rhox], [rhoy, rhoz]])
-        rho_grid = gr.GridData(rhos, grid)
+        rho_grid = gr.DataGrid(rhos, grid)
         rhoidot_expected = 1 / hbar * la.CartesianSpinOperator((0., 0., 0., 0.))
         rhoxdot_expected = 1 / hbar * la.CartesianSpinOperator((0., 0., 1., 0.))
         rhoydot_expected = 1 / hbar * la.CartesianSpinOperator((0., -1., 0., 0.))

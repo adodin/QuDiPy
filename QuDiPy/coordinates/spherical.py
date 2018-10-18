@@ -5,6 +5,7 @@ Written by: Amro Dodin (Willard Group - MIT)
 
 from numpy import pi, sin, cos, sqrt, arccos, arctan
 import numpy as np
+from QuDiPy.coordinates.cartesian import calculate_differentials
 
 
 # Spherical <-> Cartesian Conversion (Vectorized)
@@ -124,27 +125,38 @@ def cartesian_to_spherical_mesh(cart_coords):
 
 
 # Differential Calculus Functions
-def calculate_spherical_gradient(data, coords, grid):
-    partial_derivatives = np.gradient(data, *coords)
+def calculate_spherical_gradient(data, coordinates, grid):
+    partial_derivatives = np.gradient(data, *coordinates, edge_order=2)
     r, theta, phi = grid
-    partial_derivatives[1] = partial_derivatives[1]/r
-    partial_derivatives[2] = partial_derivatives[2]/(r*sin(theta))
+    r_arr, t_arr, p_arr = coordinates
+    dr, dtheta = calculate_differentials((r_arr, t_arr))
+    r_safe = np.min(dr) * 1E-7
+    t_safe = sin(np.min(dtheta)) * 1E-7
+    r_fact = r + r_safe
+    s_theta = sin(theta) + t_safe
+    partial_derivatives[1] = partial_derivatives[1]/r_fact
+    partial_derivatives[2] = partial_derivatives[2]/(r_fact * s_theta)
     return partial_derivatives
 
 
 def calculate_spherical_divergence(vector_funct, coordinates, grid):
     r, theta, phi = grid
-    v_funct = []
-    v_funct.append(vector_funct[0] * r ** 2)
-    v_funct.append(vector_funct[1] * sin(theta))
-    v_funct.append(vector_funct[2])
+    r_arr, t_arr, p_arr = coordinates
+    dr, dtheta = calculate_differentials((r_arr, t_arr))
+    r_safe = np.min(dr) * 1E-100
+    t_safe = sin(np.min(dtheta) * 1E-100)
+    r_fact = r + r_safe
+    s_theta = sin(theta) + t_safe
 
-    divergence = np.zeros_like(v_funct[0])
-    r_div = np.gradient(v_funct[0], coordinates[0], axis=0, edge_order=2)/(r ** 2)
-    divergence += r_div
-    t_div = np.gradient(v_funct[1], coordinates[1], axis=1, edge_order=2)/(r * sin(theta))
+
+    divergence = np.zeros_like(vector_funct[0])
+    r_div = np.gradient(vector_funct[0], coordinates[0], axis=0, edge_order=2)
+    r_div2 = 2 * (vector_funct[0] + r_safe)/r_fact
+    divergence += r_div + r_div2
+    t_div = np.gradient(vector_funct[1], coordinates[1], axis=1, edge_order=2)/r_fact \
+            + cos(theta) * (vector_funct[1] + r_safe * t_safe)/(r_fact * s_theta)
     divergence += t_div
-    p_div = np.gradient(v_funct[2], coordinates[2], axis=2, edge_order=2)/(r * sin(theta))
+    p_div = (np.gradient(vector_funct[2], coordinates[2], axis=2, edge_order=2) + r_safe * t_safe)/(r_fact * s_theta)
     divergence += p_div
     return divergence
 

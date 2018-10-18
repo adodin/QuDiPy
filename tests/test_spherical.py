@@ -4,34 +4,33 @@ import QuDiPy.coordinates.spherical as sp
 import numpy as np
 from numpy import pi, sin
 
+x_s = (1., pi/2, 0)
+y_s = (1., pi/2, pi/2)
+z_s = (1., 0., 0.)
+minus_x_s = (1., pi/2, pi)
+
+x_c = (1., 0., 0.)
+y_c = (0., 1., 0.)
+z_c = (0., 0., 1.)
+minus_x_c = (-1., 0., 0.)
+
 
 class TestSphericalToCartesian(TestCase):
-    def test_spherical_to_cartesian_one_3D_point(self):
-        x_spherical = (1., pi/2, 0.)
-        minus_x_spherical = (1., pi/2, pi)
-        r, t, p = minus_x_spherical
-        y_spherical = (1., pi/2, pi/2)
-        z_spherical = (1., 0., 0.)
-        x_convert = sp.spherical_to_cartesian(x_spherical)
-        minus_x_convert = sp.spherical_to_cartesian(minus_x_spherical)
-        y_convert = sp.spherical_to_cartesian(y_spherical)
-        z_convert = sp.spherical_to_cartesian(z_spherical)
-        x_cart = (1., 0., 0.)
-        minus_x_cart = (-1., 0., 0.)
-        y_cart = (0., 1., 0.)
-        z_cart = (0., 0., 1.)
+    def test_spherical_to_cartesian_single_3D_points(self):
+        x_convert = sp.spherical_to_cartesian(x_s)
+        y_convert = sp.spherical_to_cartesian(y_s)
+        z_convert = sp.spherical_to_cartesian(z_s)
+        minus_x_convert = sp.spherical_to_cartesian(minus_x_s)
 
-        for xconv, xcart in zip(x_convert, x_cart):
-            self.assertAlmostEqual(xconv, xcart)
-
-        for xconv, xcart in zip(minus_x_convert, minus_x_cart):
-            self.assertAlmostEqual(xconv, xcart)
-
-        for yconv, ycart in zip(y_convert, y_cart):
-            self.assertAlmostEqual(yconv, ycart)
-
-        for zconv, zcart in zip(z_convert, z_cart):
-            self.assertAlmostEqual(zconv, zcart)
+        # Test Float Equality to 7 Decimal Places for each Component
+        for xc, xe in zip(x_convert, x_c):
+            self.assertAlmostEqual(xc, xe)
+        for yc, ye in zip(y_convert, y_c):
+            self.assertAlmostEqual(yc, ye)
+        for zc, ze in zip(z_convert, z_c):
+            self.assertAlmostEqual(zc, ze)
+        for xc, xe in zip(minus_x_convert, minus_x_c):
+            self.assertAlmostEqual(xc, xe)
 
     def test_spherical_to_cartesian_one_3D_complex_point(self):
         x_iy_spherical = (1. + 1.j, pi/2 + 1.j * pi/2, 1.j * pi/2)
@@ -138,8 +137,8 @@ class TestCartesianToSpherical(TestCase):
         self.assertTrue(np.array_equal(np.round(x_iy_conv, 7), np.round(x_iy_spherical, 7)))
 
 
-class TestSphericalToCartesianMesh(TestCase):
-    def test_spherical_to_cartesian_grid(self):
+'''class TestSphericalToCartesianMesh(TestCase):
+    def test_spherical_to_cartesian_mesh(self):
         r_array = (1., 0.5, 0.0)
         theta_array = (0.0, pi / 2)
         phi_array = (0.0, pi / 2)
@@ -149,7 +148,7 @@ class TestSphericalToCartesianMesh(TestCase):
         z_grid = np.array([[[1., 1.], [0., 0.]], [[0.5, 0.5], [0., 0.]], [[0., 0.], [0., 0.]]])
         self.assertTrue(np.array_equal(np.round(x_conv, 7), x_grid))
         self.assertTrue(np.array_equal(np.round(y_conv, 7), y_grid))
-        self.assertTrue(np.array_equal(np.round(z_conv, 7), z_grid))
+        self.assertTrue(np.array_equal(np.round(z_conv, 7), z_grid))'''
 
 
 class TestCalculateSphericalVolumeElement(TestCase):
@@ -175,8 +174,8 @@ class TestCalculateSphericalVolumeElement(TestCase):
 
 class TestCalculateSphericalGradient(TestCase):
     def test_gradient_radial(self):
-        r_array = np.linspace(1E-4, 1., 20)
-        theta_array = np.linspace(1E-4, pi-1E-4, 10)
+        r_array = np.linspace(0., 1., 20)
+        theta_array = np.linspace(0., pi, 10)
         phi_array = np.linspace(0., 2*pi, 10)
         r_grid, t_grid, p_grid = np.meshgrid(r_array, theta_array, phi_array, indexing='ij')
         funct = r_grid
@@ -186,13 +185,13 @@ class TestCalculateSphericalGradient(TestCase):
         for correct, calculated in zip(correct_gradient, calculated_gradient):
             self.assertTrue(np.array_equal(np.round(calculated, 7), np.round(correct, 7)))
 
-    def test_gradient_azimuthal(self):
-        r_array = np.linspace(1E-4, 1., 20)
-        theta_array = np.linspace(1E-4, pi - 1E-4, 10)
+    def test_gradient_radial_quadratic(self):
+        r_array = np.linspace(0., 1., 20)
+        theta_array = np.linspace(0., pi, 10)
         phi_array = np.linspace(0., 2 * pi, 10)
         r_grid, t_grid, p_grid = np.meshgrid(r_array, theta_array, phi_array, indexing='ij')
-        funct = p_grid
-        correct_gradient = (np.zeros_like(r_grid), np.zeros_like(t_grid), np.ones_like(p_grid)/(r_grid*sin(t_grid)))
+        funct = r_grid ** 2
+        correct_gradient = (2 * r_grid, np.zeros_like(t_grid), np.zeros_like(p_grid))
         calculated_gradient = sp.calculate_spherical_gradient(funct, (r_array, theta_array, phi_array),
                                                               (r_grid, t_grid, p_grid))
         for correct, calculated in zip(correct_gradient, calculated_gradient):
@@ -201,16 +200,26 @@ class TestCalculateSphericalGradient(TestCase):
 
 class TestCalculateSphericalDivergence(TestCase):
     def test_divergence_radial(self):
-        r_array = np.linspace(1E-2, 1., 10000)
-        theta_array = np.linspace(1E-2, pi-1E-2, 10)
+        r_array = np.linspace(1E-12, 1., 20)
+        theta_array = np.linspace(0., pi, 10)
         phi_array = np.linspace(0., 2*pi, 10)
         r_grid, t_grid, p_grid = np.meshgrid(r_array, theta_array, phi_array, indexing='ij')
         vector_funct = (r_grid, np.zeros_like(t_grid), np.zeros_like(p_grid))
-        correct_divergence = 3* np.ones_like(r_grid)
+        correct_divergence = 3 * np.ones_like(r_grid)
         calculated_divergence = sp.calculate_spherical_divergence(vector_funct, (r_array, theta_array, phi_array),
                                                                   (r_grid, t_grid, p_grid))
-        self.assertTrue(np.array_equal(np.round(calculated_divergence, 3), correct_divergence))
-        # Allow for numerical error of 0.1 %
+        self.assertTrue(np.array_equal(np.round(calculated_divergence, 7), correct_divergence))
+
+    def test_divergence_azimuthal(self):
+        r_array = np.linspace(1E-12, 1., 20)
+        theta_array = np.linspace(1E-12, pi, 10)
+        phi_array = np.linspace(0., 2 * pi, 10)
+        r_grid, t_grid, p_grid = np.meshgrid(r_array, theta_array, phi_array, indexing='ij')
+        vector_funct = (np.zeros_like(r_grid), np.zeros_like(t_grid), r_grid * sin(t_grid))
+        correct_divergence = np.zeros_like(r_grid)
+        calculated_divergence = sp.calculate_spherical_divergence(vector_funct, (r_array, theta_array, phi_array),
+                                                                  (r_grid, t_grid, p_grid))
+        self.assertTrue(np.array_equal(np.round(calculated_divergence, 7), correct_divergence))
 
 
 if __name__ == '__main__':

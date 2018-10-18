@@ -41,23 +41,23 @@ phi = np.linspace(0., 2 * np.pi, res_phi)
 spher_grid = gr.SphericalGrid((r, theta, phi))
 
 # Initialize Operators
-cart_ops = gr.initialize_operator_grid(cart_grid, la.CartesianSpinOperator, i_coord=0.5)
-spher_ops = gr.initialize_operator_grid(spher_grid, la.CartesianSpinOperator, i_coord=0.5)
+cart_ops = gr.VectorGrid(cart_grid.cartesian, cart_grid, operator_type=la.CartesianSpinOperator)
+spher_ops = gr.VectorGrid(spher_grid.mesh, spher_grid, operator_type=la.SphericalSpinOperator)
 
 # Calculate Unitary Derivatives for Both Grids
 cart_rho_dot = grid_unitary_derivative(cart_ops, ham)
 spher_rho_dot = grid_bloch_derivative(spher_ops, ham, g_diss, g_diss, r_pump)
 
 # Mask Cartesian Plots on the Bloch Sphere
-x_g, y_g, z_g = cart_grid.grid
-bloch_mask = np.heaviside(1 - 2 * np.sqrt(x_g * x_g + y_g * y_g + z_g * z_g), 1)
-bloch_mask = cart_ops.like(bloch_mask)
-cart_ops = bloch_mask * cart_ops
-cart_rho_dot = bloch_mask * cart_rho_dot
+x_g, y_g, z_g = cart_grid.mesh
+bloch_mask = np.heaviside(1. - 2 * np.sqrt(x_g * x_g + y_g * y_g + z_g * z_g), 1)
+bloch_mask = gr.DataGrid(bloch_mask, cart_grid)
+cart_ops = cart_ops * bloch_mask
+cart_rho_dot = cart_rho_dot * bloch_mask
 
 # Set Formatting for Plots
-quiver_kwargs=[{'linewidth': 2., 'colors': red}, {'linewidth': 2., 'colors': green}]
-proj_quiver_kwargs=[{'linewidth': 2., 'colors': red, 'alpha': 0.5}, {'linewidth': 2., 'colors': green, 'alpha': 0.0}]
+quiver_kwargs = [{'linewidth': 2., 'colors': red}, {'linewidth': 2., 'colors': green},]
+proj_quiver_kwargs = [{'linewidth': 2., 'colors': red, 'alpha': 0.5}, {'linewidth': 2., 'colors': red, 'alpha': 0.}]
 
 bq.plot_flow([cart_ops, spher_ops], quiver_kwargs=quiver_kwargs,
              proj_quiver_kwargs=proj_quiver_kwargs, fig_num='Operators')
